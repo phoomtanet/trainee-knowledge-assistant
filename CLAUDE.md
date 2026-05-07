@@ -286,3 +286,9 @@ Refresh token
 
 
 
+## Session 5 — Create Chat UI  [x]
+= สร้าง ui หน้า  Chat UI ตกแต่งล้ำสมัย
+- เมื่อlogin ผ่านให้ไปหน้า Chat UI 
+  ## 5.1 fix
+- fix 1 : E:\project\trainee-knowledge-assistant\frontend\src\app\page.tsx  กดแล้วไม่ไปหน้า login
+

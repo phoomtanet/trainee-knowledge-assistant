@@ -146,3 +146,37 @@ feat: implement full login flow with JWT authentication
 - Add Next.js login page with loading/error states
 - Add route protection middleware for /chat and /documents
 ```
+
+---
+
+## Session 5
+
+**Prompt:**
+สร้าง Chat UI หน้า /chat ล้ำสมัย และ redirect หลัง login ไปหน้า chat
+
+**AI Response:**
+- สร้าง `app/chat/page.tsx` — Chat UI เต็มหน้าจอ dark theme
+  - Header: ชื่อ app + ปุ่มออกจากระบบ
+  - Message list: AI bubble (ซ้าย) + User bubble (ขวา) พร้อม auto-scroll
+  - Loading indicator: 3 dots bounce animation ขณะรอ AI
+  - Textarea input: Enter ส่ง, Shift+Enter ขึ้นบรรทัด
+  - Placeholder AI response (จะเชื่อม API จริงใน session ถัดไป)
+- อัปเดต `login/page.tsx` — redirect ไป `/chat` หลัง login สำเร็จ
+
+**My Adjustment:**
+[รอ manual review จาก developer]
+
+**fix1 — แก้ปุ่ม "เริ่มต้นใช้งาน →" ไม่พาไปหน้า /login:**
+- Root Cause: `middleware.ts` redirect `/login` → `/` เมื่อ user มี `token` cookie อยู่แล้ว — ทำให้ผู้ใช้ที่ login แล้วกดปุ่มแล้ววนกลับ home ดูเหมือนปุ่มไม่ทำงาน
+- Fix: แก้ `frontend/src/middleware.ts` บรรทัด 19 — `new URL("/", ...)` → `new URL("/chat", ...)` เพื่อให้ redirect ไป `/chat` แทน
+
+**Git Commit:**
+```
+feat: add Chat UI page with modern dark design
+
+- Add full-screen chat interface with message bubbles
+- Add loading animation while waiting for AI response
+- Add auto-scroll to latest message
+- Redirect to /chat after successful login
+- fix: redirect authenticated users from /login to /chat in middleware
+```
