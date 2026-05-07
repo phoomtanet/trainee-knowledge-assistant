@@ -188,3 +188,34 @@ feat: add Chat UI page with modern dark design
 - fix1: redirect authenticated users from /login to /chat in middleware
 - fix2: allow logout without valid access token by removing authenticate guard
 ```
+
+---
+
+## Session 6
+
+**Prompt:**
+สร้าง API สำหรับหน้า Chat บอท โดยใช้ OPENROUTER_API_KEY และ OPENROUTER_MODEL จาก .env และเชื่อม Chat UI ให้ถามตอบได้
+
+**AI Response:**
+- เพิ่ม `openrouterApiKey`, `openrouterModel` ใน `backend/src/config/env.ts`
+- สร้าง `backend/src/services/chat.service.ts` — เรียก OpenRouter API (`/v1/chat/completions`) พร้อม Authorization header
+- สร้าง `backend/src/controllers/chat.controller.ts` — validate messages[], เรียก chatService, ส่ง reply กลับ
+- สร้าง `backend/src/routes/chat.routes.ts` — POST `/api/chat` ป้องกันด้วย `authenticate`
+- อัปเดต `backend/src/app.ts` — register `/api/chat`
+- สร้าง `frontend/src/types/chat.ts` — ChatMessage, ChatResponse interfaces
+- สร้าง `frontend/src/services/chat.service.ts` — fetch POST /api/chat พร้อม credentials: include
+- อัปเดต `frontend/src/app/chat/page.tsx` — แทนที่ setTimeout placeholder ด้วย chatService.send() พร้อม error message fallback
+
+**My Adjustment:**
+ เพิ่ม OPENROUTER_API_KEY และ OPENROUTER_MODEL
+
+**Git Commit:**
+```
+feat: connect Chat UI to OpenRouter API
+
+- Add OpenRouter config (API key, model) to backend env
+- Add chat service calling OpenRouter chat completions endpoint
+- Add chat controller and route (POST /api/chat) with auth guard
+- Add frontend chat service and types
+- Replace placeholder response with real AI reply in chat page
+```

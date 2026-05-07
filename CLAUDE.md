@@ -292,3 +292,11 @@ Refresh token
   ## 5.1 fix
 - fix 1 : E:\project\trainee-knowledge-assistant\frontend\src\app\page.tsx  กดแล้วไม่ไปหน้า login
 - fix 2 : E:\project\trainee-knowledge-assistant\frontend\src\app\chat\page.tsx  กดออกจากระบบไม่ได้ ปรับให้ทำงานได้ 
+
+
+
+## Session 6 —  Chat Bot Api [x]
+- สร้าง api สำหรับหน้า Chat บอท
+- โดยใช้  key OPENROUTER_API_KEY และ โมเดล OPENROUTER_MODEL  จาก.env
+- Chat UI เชื่อมกับ api ให้ถามตอบได้ 
+

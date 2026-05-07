@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "@/services/auth.service";
+import { chatService } from "@/services/chat.service";
+import { ChatMessage } from "@/types/chat";
 
 interface Message {
   id: string;
@@ -45,17 +47,31 @@ export default function ChatPage() {
     setInput("");
     setLoading(true);
 
-    // placeholder — จะเชื่อมต่อ AI API ใน session ถัดไป
-    setTimeout(() => {
+    try {
+      const history: ChatMessage[] = messages
+        .filter((m) => m.id !== "welcome")
+        .map((m) => ({ role: m.role, content: m.content }));
+      history.push({ role: "user", content: text });
+
+      const reply = await chatService.send(history);
       const aiMsg: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: "ขอบคุณสำหรับคำถามครับ ⚙️ ระบบ AI กำลังพัฒนาอยู่ในขั้นตอนถัดไป",
+        content: reply,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMsg]);
+    } catch {
+      const errMsg: Message = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: "เกิดข้อผิดพลาด ไม่สามารถเชื่อมต่อ AI ได้ กรุณาลองใหม่อีกครั้ง",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errMsg]);
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   const handleLogout = async () => {

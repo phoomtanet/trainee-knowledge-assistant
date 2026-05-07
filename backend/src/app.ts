@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { errorHandler } from "./middlewares/errorHandler";
 import { env } from "./config/env";
 import authRoutes from "./routes/auth.routes";
+import chatRoutes from "./routes/chat.routes";
 
 const app: Application = express();
 
@@ -17,6 +18,7 @@ app.get("/health", (_req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.use(errorHandler);
 

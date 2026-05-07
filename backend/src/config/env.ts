@@ -14,4 +14,6 @@ export const env = {
   refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET || "change-this-refresh-secret",
   refreshTokenExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || "7d",
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
+  openrouterApiKey: process.env.OPENROUTER_API_KEY || "",
+  openrouterModel: process.env.OPENROUTER_MODEL || "",
 } as const;
