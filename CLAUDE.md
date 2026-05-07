@@ -37,6 +37,8 @@ Project Name: mini knowledge assistant
 
 # AI Working Rules
 
+* Before starting ANY session, read `PROJECT.md` to understand the current project structure
+* Keep `PROJECT.md` updated when making structural changes
 * Work only ONE task at a time
 * Do NOT skip tasks
 * Before starting a task:
@@ -252,3 +254,5 @@ Add .gitkeep to the empty structure.
 
 
 ---
+## Session 3 — Create Structure  Infomation File [x]
+ - ใช่สำหรับให้ ai อ่านไฟล์ แล้วเข้าใจโครงสร้างของโปรเจค เพื่อให้พัฒนาระบบได้ง่ายขึ้น

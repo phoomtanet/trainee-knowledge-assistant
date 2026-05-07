@@ -74,3 +74,28 @@ feat: scaffold backend service layer with Express.js and TypeScript
 - Add shared types, response helpers, and HTTP constants
 - Add Docker setup with MongoDB and Qdrant services
 ```
+
+---
+
+## Session 3
+
+**Prompt:**
+สร้าง Structure Information File สำหรับให้ AI อ่านแล้วเข้าใจโครงสร้างโปรเจกต์ได้ทันที
+
+**AI Response:**
+- สร้าง `PROJECT.md` ที่ project root — ครอบคลุม: project overview, tech stack table, monorepo directory layout, frontend/backend structure พร้อม key files, Docker services, API response convention, error handling pattern, planned features by session
+- เพิ่ม 2 กฎใน `CLAUDE.md` ภายใต้ AI Working Rules:
+  - "Before starting ANY session, read `PROJECT.md`"
+  - "Keep `PROJECT.md` updated when making structural changes"
+
+**My Adjustment:**
+[รอ manual review จาก developer]
+
+**Git Commit:**
+```
+docs: add PROJECT.md structure information file for AI context
+
+- Document complete monorepo structure (frontend + backend)
+- Add architecture flow, key files, API conventions
+- Add rule in CLAUDE.md to read PROJECT.md before each session
+```
