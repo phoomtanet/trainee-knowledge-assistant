@@ -265,3 +265,34 @@ feat: add document upload API and upload UI
 - fix1: move upload into chat page with paperclip button next to input
 - fix2: fix pdfParse not a function by unwrapping .default, add uploads dir in Dockerfile
 ```
+
+---
+
+## Session 8
+
+**Prompt:**
+สร้าง Vector Embedding และ Qdrant Integration สำหรับ RAG — chunk text, embed, store, search
+
+**AI Response:**
+- ติดตั้ง `@langchain/openai`, `@langchain/textsplitters`, `@qdrant/js-client-rest`
+- สร้าง `backend/src/lib/qdrant.ts` — QdrantClient singleton + `ensureCollection()` สร้าง collection อัตโนมัติถ้าไม่มี
+- สร้าง `backend/src/utils/textChunker.ts` — `chunkText()` ใช้ RecursiveCharacterTextSplitter (size: 1000, overlap: 200)
+- สร้าง `backend/src/services/embedding.service.ts` — `storeDocument()`: chunk → embed (OpenAI) → upsert to Qdrant พร้อม payload (text, filename, chunkIndex)
+- สร้าง `backend/src/services/search.service.ts` — `search()`: embed query → Qdrant similarity search → return top-K results
+- อัปเดต `types/document.ts` — เพิ่ม `chunksStored: number`
+- อัปเดต `document.service.ts` — เรียก `embeddingService.storeDocument()` หลัง parse (best-effort, skip if no OPENAI_API_KEY)
+- อัปเดต `document.controller.ts` — return `chunksStored` ใน response
+
+**My Adjustment:**
+[รอ manual review จาก developer]
+
+**Git Commit:**
+```
+feat: add vector embedding and Qdrant integration for RAG
+
+- Add QdrantClient lib with auto collection creation
+- Add text chunker using RecursiveCharacterTextSplitter (1000/200)
+- Add embedding service storing chunks to Qdrant via OpenAI embeddings
+- Add search service for semantic similarity search
+- Wire embedding into document upload flow (best-effort)
+```

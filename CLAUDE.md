@@ -254,9 +254,11 @@ Add .gitkeep to the empty structure.
 
 
 ---
+
 ## Session 3 — Create Structure  Infomation File [x]
  - ใช่สำหรับให้ ai อ่านไฟล์ แล้วเข้าใจโครงสร้างของโปรเจค เพื่อให้พัฒนาระบบได้ง่ายขึ้น
 
+---
 
 ## Session 4 — Create flow login [x]
 
@@ -284,6 +286,7 @@ env variables
 rate limit login
 Refresh token
 
+---
 
 
 ## Session 5 — Create Chat UI  [x]
@@ -293,6 +296,7 @@ Refresh token
 - fix 1 : E:\project\trainee-knowledge-assistant\frontend\src\app\page.tsx  กดแล้วไม่ไปหน้า login
 - fix 2 : E:\project\trainee-knowledge-assistant\frontend\src\app\chat\page.tsx  กดออกจากระบบไม่ได้ ปรับให้ทำงานได้ 
 
+---
 
 
 ## Session 6 —  Chat Bot Api [x]
@@ -300,8 +304,10 @@ Refresh token
 - โดยใช้  key OPENROUTER_API_KEY และ โมเดล OPENROUTER_MODEL  จาก.env
 - Chat UI เชื่อมกับ api ให้ถามตอบได้ 
 
+---
 
-## Session 7 — Upload Document And RAG Preparation [ ]
+
+## Session 7 — Upload Document And RAG Preparation [x]
 
 Create document upload and preparation flow for future RAG functionality.
 
@@ -375,5 +381,42 @@ Keep UI reusable and modular
 2026-05-07 23:28:56     at async Object.parse (/app/dist/services/document.service.js:10:20)
 2026-05-07 23:28:56     at async upload (/app/dist/controllers/document.controller.js:12:28)
 ขึ้นตอนอัปโหลดไฟล์
+
+---
+
+## Session 8 — Vector Embedding And Qdrant Integration [x]
+
+Create vector embedding and retrieval flow for RAG functionality.
+
+Requirements:
+
+Split parsed document text into chunks
+Generate embeddings from document chunks
+Store embeddings into Qdrant vector database
+Create reusable vector search functionality
+Retrieve relevant document chunks from user questions
+Prepare scalable RAG architecture
+Keep implementation modular and maintainable
+Handle embedding/search errors properly
+
+Architecture:
+
+Separate embedding logic from upload logic
+Separate vector database logic into dedicated services/lib
+Separate chunking utilities into utils/
+Separate request/response types into dedicated files
+Keep files reusable and focused on single responsibility
+Avoid duplicated logic
+
+Technical Requirements:
+
+Use TypeScript
+Use async/await
+Use LangChain
+Use Qdrant
+Use environment variables
+Keep chunking reusable
+Keep vector search reusable
+Handle invalid embedding responses safely
 
           

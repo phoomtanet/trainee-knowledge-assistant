@@ -16,4 +16,5 @@ export const env = {
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
   openrouterApiKey: process.env.OPENROUTER_API_KEY || "",
   openrouterModel: process.env.OPENROUTER_MODEL || "",
+  embeddingModel: process.env.EMBEDDING_MODEL || "",
 } as const;

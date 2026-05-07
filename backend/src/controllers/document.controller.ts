@@ -14,6 +14,7 @@ export const documentController = {
         filename: parsed.filename,
         size: parsed.size,
         mimetype: parsed.mimetype,
+        chunksStored: parsed.chunksStored,
         preview: parsed.text.slice(0, 500),
       }, "File uploaded and parsed successfully");
     } catch (err) {

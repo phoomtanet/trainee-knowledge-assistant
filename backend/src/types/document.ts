@@ -4,4 +4,5 @@ export interface ParsedDocument {
   size: number;
   text: string;
   path: string;
+  chunksStored: number;
 }
