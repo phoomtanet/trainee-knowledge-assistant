@@ -1,7 +1,8 @@
 import fs from "fs/promises";
 
-// pdf-parse is a CommonJS module — require() avoids type mismatch with esModuleInterop
-const pdfParse = require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
+// pdf-parse is a CommonJS module; compiled output may wrap it under .default
+const _pdfMod = require("pdf-parse");
+const pdfParse = (_pdfMod.default ?? _pdfMod) as (buf: Buffer) => Promise<{ text: string }>;
 
 export const parsePdf = async (filePath: string): Promise<string> => {
   const buffer = await fs.readFile(filePath);

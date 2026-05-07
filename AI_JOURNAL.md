@@ -243,6 +243,13 @@ feat: connect Chat UI to OpenRouter API
 **My Adjustment:**
 [รอ manual review จาก developer]
 
+**fix1 — ย้าย upload เข้า Chat page เหมือนแชตบอททั่วไป:**
+- ลบ separate `/documents` page ออก — ย้าย upload functionality เข้าไปใน `chat/page.tsx` โดยตรง
+- เพิ่มปุ่ม 📎 (paperclip icon) ซ้ายของ textarea — คลิกเพิ่ม hidden file input
+- เมื่ออัปโหลดสำเร็จ: แสดง AI message แจ้งผู้ใช้ + status badge สีเขียวที่ input bar
+- เมื่ออัปโหลด error: แสดง status badge สีแดง + auto-dismiss 4 วินาที
+- ระหว่างอัปโหลด: spinner + disable ปุ่ม 📎
+
 **Git Commit:**
 ```
 feat: add document upload API and upload UI
@@ -250,5 +257,5 @@ feat: add document upload API and upload UI
 - Add multer upload middleware (PDF/TXT only, 10MB limit, UUID filename)
 - Add pdf-parse and txt file parser utilities
 - Add document service, controller, and route (POST /api/documents/upload)
-- Add frontend upload page with drag & drop, loading, success, error states
+- fix1: move upload into chat page with paperclip button next to input
 ```

@@ -365,3 +365,10 @@ Allow selecting PDF/TXT files
 Show upload loading state
 Show upload success/error state
 Keep UI reusable and modular
+
+  ##  7.1 fix
+- fix 1: ส่วนของ uplaod documents ใหย้ายอยู่หน้า E:\project\trainee-knowledge-assistant\frontend\src\app\chat\page.tsx 
+  ให้มีปุ่ม upload ข้าง input chat  เหมือนแชตบอททั่วไป
+
+
+          

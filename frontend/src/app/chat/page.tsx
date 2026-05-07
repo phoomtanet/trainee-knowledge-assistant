@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect, FormEvent } from "react";
+import { useState, useRef, useEffect, FormEvent, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "@/services/auth.service";
 import { chatService } from "@/services/chat.service";
+import { documentService } from "@/services/document.service";
 import { ChatMessage } from "@/types/chat";
 
 interface Message {
@@ -12,6 +13,8 @@ interface Message {
   content: string;
   timestamp: Date;
 }
+
+type UploadStatus = "idle" | "uploading" | "success" | "error";
 
 const WELCOME: Message = {
   id: "welcome",
@@ -25,7 +28,10 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
+  const [uploadLabel, setUploadLabel] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -54,23 +60,51 @@ export default function ChatPage() {
       history.push({ role: "user", content: text });
 
       const reply = await chatService.send(history);
-      const aiMsg: Message = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: reply,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMsg]);
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), role: "assistant", content: reply, timestamp: new Date() },
+      ]);
     } catch {
-      const errMsg: Message = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: "เกิดข้อผิดพลาด ไม่สามารถเชื่อมต่อ AI ได้ กรุณาลองใหม่อีกครั้ง",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errMsg]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: "เกิดข้อผิดพลาด ไม่สามารถเชื่อมต่อ AI ได้ กรุณาลองใหม่อีกครั้ง",
+          timestamp: new Date(),
+        },
+      ]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    setUploadStatus("uploading");
+    setUploadLabel(file.name);
+
+    try {
+      const data = await documentService.upload(file);
+      setUploadStatus("success");
+      setUploadLabel(data.filename);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: `อัปโหลด "${data.filename}" สำเร็จแล้วครับ ✓\nคุณสามารถถามคำถามเกี่ยวกับเอกสารนี้ได้เลย`,
+          timestamp: new Date(),
+        },
+      ]);
+      setTimeout(() => setUploadStatus("idle"), 3000);
+    } catch (err) {
+      setUploadStatus("error");
+      setUploadLabel(err instanceof Error ? err.message : "Upload failed");
+      setTimeout(() => setUploadStatus("idle"), 4000);
     }
   };
 
@@ -142,7 +176,47 @@ export default function ChatPage() {
         onSubmit={handleSend}
         className="px-4 pb-6 pt-3 border-t border-gray-800 bg-gray-900"
       >
-        <div className="flex items-end gap-3 max-w-4xl mx-auto">
+        {/* Upload status */}
+        {uploadStatus !== "idle" && (
+          <div
+            className={`max-w-4xl mx-auto mb-2 px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 ${
+              uploadStatus === "uploading"
+                ? "bg-gray-800 text-gray-400"
+                : uploadStatus === "success"
+                ? "bg-green-500/10 text-green-400"
+                : "bg-red-500/10 text-red-400"
+            }`}
+          >
+            {uploadStatus === "uploading" && (
+              <span className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin shrink-0" />
+            )}
+            {uploadStatus === "success" && <span>✓</span>}
+            {uploadStatus === "error" && <span>✕</span>}
+            <span className="truncate">{uploadLabel}</span>
+          </div>
+        )}
+
+        <div className="flex items-end gap-2 max-w-4xl mx-auto">
+          {/* File upload button */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadStatus === "uploading"}
+            title="อัปโหลดเอกสาร PDF/TXT"
+            className="p-3 rounded-xl text-gray-400 hover:text-white hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+            </svg>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.txt"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
