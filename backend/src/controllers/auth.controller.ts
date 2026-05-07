@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { authService } from "../services/auth.service";
 import { AppError } from "../middlewares/errorHandler";
 import { sendSuccess } from "../utils/response";
-import { AuthRequest } from "../middlewares/auth.middleware";
 
 const COOKIE_BASE = {
   httpOnly: true,
@@ -53,11 +52,10 @@ export const authController = {
     }
   },
 
-  logout: async (req: AuthRequest, res: Response, next: NextFunction) => {
+  logout: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (req.user?.id) {
-        await authService.logout(req.user.id);
-      }
+      const refreshToken = req.cookies?.refreshToken as string | undefined;
+      await authService.logout(refreshToken);
       res.clearCookie("token");
       res.clearCookie("refreshToken");
       sendSuccess(res, null, "Logged out successfully");

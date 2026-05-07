@@ -170,6 +170,13 @@ feat: implement full login flow with JWT authentication
 - Root Cause: `middleware.ts` redirect `/login` → `/` เมื่อ user มี `token` cookie อยู่แล้ว — ทำให้ผู้ใช้ที่ login แล้วกดปุ่มแล้ววนกลับ home ดูเหมือนปุ่มไม่ทำงาน
 - Fix: แก้ `frontend/src/middleware.ts` บรรทัด 19 — `new URL("/", ...)` → `new URL("/chat", ...)` เพื่อให้ redirect ไป `/chat` แทน
 
+**fix2 — แก้ปุ่มออกจากระบบใน /chat ไม่ทำงาน:**
+- Root Cause: route `POST /api/auth/logout` ใช้ `authenticate` middleware ตรวจ access token — ถ้า token หมดอายุ (15 นาที) จะได้ 401 กลับ cookies ไม่ถูก clear และ redirect ไม่เกิดขึ้น
+- Fix:
+  - `auth.routes.ts` — ลบ `authenticate` ออกจาก logout route
+  - `auth.controller.ts` — อ่าน `refreshToken` จาก cookie โดยตรงแทน `req.user.id`
+  - `auth.service.ts` — `logout()` รับ `refreshToken` แล้วหา user จาก DB เพื่อ clear — ออกจากระบบได้เสมอแม้ access token หมดอายุ
+
 **Git Commit:**
 ```
 feat: add Chat UI page with modern dark design
@@ -178,5 +185,6 @@ feat: add Chat UI page with modern dark design
 - Add loading animation while waiting for AI response
 - Add auto-scroll to latest message
 - Redirect to /chat after successful login
-- fix: redirect authenticated users from /login to /chat in middleware
+- fix1: redirect authenticated users from /login to /chat in middleware
+- fix2: allow logout without valid access token by removing authenticate guard
 ```

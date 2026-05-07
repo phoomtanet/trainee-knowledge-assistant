@@ -291,4 +291,4 @@ Refresh token
 - เมื่อlogin ผ่านให้ไปหน้า Chat UI 
   ## 5.1 fix
 - fix 1 : E:\project\trainee-knowledge-assistant\frontend\src\app\page.tsx  กดแล้วไม่ไปหน้า login
-
+- fix 2 : E:\project\trainee-knowledge-assistant\frontend\src\app\chat\page.tsx  กดออกจากระบบไม่ได้ ปรับให้ทำงานได้ 

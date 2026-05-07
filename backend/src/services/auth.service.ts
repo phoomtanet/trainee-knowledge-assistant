@@ -62,7 +62,11 @@ export const authService = {
     return { accessToken: newAccessToken };
   },
 
-  logout: async (userId: string) => {
-    await userRepository.updateRefreshToken(userId, null);
+  logout: async (refreshToken: string | undefined) => {
+    if (!refreshToken) return;
+    const user = await userRepository.findByRefreshToken(refreshToken);
+    if (user) {
+      await userRepository.updateRefreshToken(String(user._id), null);
+    }
   },
 };
