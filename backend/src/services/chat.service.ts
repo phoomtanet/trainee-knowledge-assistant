@@ -8,7 +8,23 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface TokenUsage {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+}
+
+export interface ChatResult {
+  reply: string;
+  tokenUsage: TokenUsage;
+}
+
 type OpenRouterMessage = { role: "system" | "user" | "assistant"; content: string };
+
+interface OpenRouterResponse {
+  choices?: { message?: { content?: string } }[];
+  usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
+}
 
 const searchContext = async (messages: ChatMessage[]): Promise<string> => {
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
@@ -17,13 +33,12 @@ const searchContext = async (messages: ChatMessage[]): Promise<string> => {
     const results = await searchService.search(lastUser.content, 3);
     return buildSystemContext(results);
   } catch {
-    // Qdrant not ready or collection missing — proceed without context
     return "";
   }
 };
 
 export const chatService = {
-  chat: async (messages: ChatMessage[]): Promise<string> => {
+  chat: async (messages: ChatMessage[]): Promise<ChatResult> => {
     if (!env.openrouterApiKey) {
       throw new AppError(500, "OpenRouter API key not configured");
     }
@@ -52,9 +67,17 @@ export const chatService = {
       throw new AppError(502, error.error?.message || "OpenRouter API error");
     }
 
-    const data = await res.json() as { choices?: { message?: { content?: string } }[] };
+    const data = await res.json() as OpenRouterResponse;
     const content = data.choices?.[0]?.message?.content;
     if (!content) throw new AppError(502, "Empty response from AI");
-    return content;
+
+    return {
+      reply: content,
+      tokenUsage: {
+        promptTokens: data.usage?.prompt_tokens ?? 0,
+        completionTokens: data.usage?.completion_tokens ?? 0,
+        totalTokens: data.usage?.total_tokens ?? 0,
+      },
+    };
   },
 };

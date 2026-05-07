@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { authService } from "@/services/auth.service";
 import { chatService } from "@/services/chat.service";
 import { documentService } from "@/services/document.service";
-import { ChatMessage } from "@/types/chat";
+import { ChatMessage, TokenUsage } from "@/types/chat";
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  tokenUsage?: TokenUsage;
 }
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
@@ -28,6 +29,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [totalTokens, setTotalTokens] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
   const [uploadLabel, setUploadLabel] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -59,11 +61,12 @@ export default function ChatPage() {
         .map((m) => ({ role: m.role, content: m.content }));
       history.push({ role: "user", content: text });
 
-      const reply = await chatService.send(history);
+      const result = await chatService.send(history);
       setMessages((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), role: "assistant", content: reply, timestamp: new Date() },
+        { id: crypto.randomUUID(), role: "assistant", content: result.reply, timestamp: new Date(), tokenUsage: result.tokenUsage },
       ]);
+      setTotalTokens((prev) => prev + (result.tokenUsage?.totalTokens ?? 0));
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -122,6 +125,11 @@ export default function ChatPage() {
             K
           </div>
           <span className="font-semibold text-white">Knowledge Assistant</span>
+          {totalTokens > 0 && (
+            <span className="text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded-lg">
+              {totalTokens.toLocaleString()} tokens
+            </span>
+          )}
         </div>
         <button
           onClick={handleLogout}
@@ -143,14 +151,21 @@ export default function ChatPage() {
                 AI
               </div>
             )}
-            <div
-              className={`max-w-[70%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-                msg.role === "user"
-                  ? "bg-blue-600 text-white rounded-br-sm"
-                  : "bg-gray-800 text-gray-100 rounded-bl-sm"
-              }`}
-            >
-              {msg.content}
+            <div className="flex flex-col gap-1">
+              <div
+                className={`max-w-[70%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+                  msg.role === "user"
+                    ? "bg-blue-600 text-white rounded-br-sm"
+                    : "bg-gray-800 text-gray-100 rounded-bl-sm"
+                }`}
+              >
+                {msg.content}
+              </div>
+              {msg.role === "assistant" && msg.tokenUsage && (
+                <p className="text-xs text-gray-500 ml-1">
+                  ↑ {msg.tokenUsage.promptTokens} · ↓ {msg.tokenUsage.completionTokens} · total {msg.tokenUsage.totalTokens}
+                </p>
+              )}
             </div>
           </div>
         ))}

@@ -324,3 +324,39 @@ feat: integrate RAG into chat — search Qdrant context before AI call
 - Inject relevant chunks as system context before forwarding to OpenRouter
 - Fallback to normal chat if no documents found or Qdrant unavailable
 ```
+
+---
+
+## Session 10
+
+**Prompt:**
+เมื่อพิมแชต ให้แสดง Token Usage Counter — แสดงจำนวน token ใต้ AI bubble และ cumulative total ที่ header
+
+**AI Response:**
+- อัปเดต `backend/src/services/chat.service.ts`:
+  - เพิ่ม `TokenUsage` และ `ChatResult` interfaces
+  - เปลี่ยน return type จาก `Promise<string>` เป็น `Promise<ChatResult>`
+  - Extract `usage.prompt_tokens`, `completion_tokens`, `total_tokens` จาก OpenRouter response
+- อัปเดต `backend/src/controllers/chat.controller.ts` — ส่ง `{ reply, tokenUsage }` ใน response
+- อัปเดต `frontend/src/types/chat.ts` — เพิ่ม `TokenUsage` interface, อัปเดต `ChatResponse`
+- อัปเดต `frontend/src/services/chat.service.ts` — return `{ reply, tokenUsage }` แทน `string`
+- อัปเดต `frontend/src/app/chat/page.tsx`:
+  - เพิ่ม `tokenUsage?: TokenUsage` ใน `Message` interface
+  - เพิ่ม `totalTokens` state
+  - เก็บ tokenUsage ใน message หลังได้รับ reply
+  - แสดงใต้ AI bubble: `↑ {prompt} · ↓ {completion} · total {total}`
+  - แสดงที่ header: `{totalTokens} tokens` badge (แสดงเมื่อ > 0)
+- Rebuild และ restart backend + frontend containers
+
+**My Adjustment:**
+[รอ manual review จาก developer]
+
+**Git Commit:**
+```
+feat: add token usage counter to chat UI
+
+- Extract prompt/completion/total tokens from OpenRouter response in chat service
+- Return tokenUsage alongside reply from backend chat endpoint
+- Display per-message token count under each AI bubble
+- Show cumulative session token total in chat header
+```

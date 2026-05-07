@@ -13,8 +13,8 @@ export const chatController = {
         throw new AppError(400, "Messages are required");
       }
 
-      const reply = await chatService.chat(messages);
-      sendSuccess(res, { reply });
+      const result = await chatService.chat(messages);
+      sendSuccess(res, { reply: result.reply, tokenUsage: result.tokenUsage });
     } catch (err) {
       next(err);
     }

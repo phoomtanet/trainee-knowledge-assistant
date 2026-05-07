@@ -444,3 +444,16 @@ Technical Requirements:
 - Inject context เป็น system message ก่อน user messages
 - Handle กรณีที่ Qdrant ยังไม่มี collection หรือ search ล้มเหลว (fallback ตอบปกติ)
 - ไม่แก้ frontend
+
+---
+
+## Session 10 — Token Usage Counter [ ]
+
+เมื่อพิมแชต ให้แสดง Token Usage Counter
+
+Requirements:
+
+- Backend ดึง token usage จาก OpenRouter API response (prompt_tokens, completion_tokens, total_tokens)
+- Return token usage กลับมาพร้อม reply ใน chat response
+- Frontend แสดง token usage ของแต่ละ message ใต้ bubble ของ AI
+- แสดงสะสม total tokens ที่ใช้ใน session ที่ header หรือ input bar
