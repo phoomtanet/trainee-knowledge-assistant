@@ -256,3 +256,33 @@ Add .gitkeep to the empty structure.
 ---
 ## Session 3 — Create Structure  Infomation File [x]
  - ใช่สำหรับให้ ai อ่านไฟล์ แล้วเข้าใจโครงสร้างของโปรเจค เพื่อให้พัฒนาระบบได้ง่ายขึ้น
+
+
+## Session 4 — Create flow login [x]
+
+หน้า /login
+username/password
+loading + error message
+seed user data
+admin / admin123
+password hash ด้วย bcrypt
+Database users 
+API Login
+ตรวจ username/password
+generate JWT
+เก็บ JWT ใน httpOnly cookie
+Protected Routes
+Middleware เช็ค login
+Logout API
+ลบ cookie
+Validation
+required fields
+sanitize input
+Security พื้นฐาน
+bcrypt
+env variables
+rate limit login
+Refresh token
+
+
+

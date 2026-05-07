@@ -99,3 +99,50 @@ docs: add PROJECT.md structure information file for AI context
 - Add architecture flow, key files, API conventions
 - Add rule in CLAUDE.md to read PROJECT.md before each session
 ```
+
+---
+
+## Session 4
+
+**Prompt:**
+สร้าง Login flow ครบวงจร — หน้า /login, API login/logout, JWT httpOnly cookie, protected routes, seed admin, rate limit
+
+**AI Response:**
+
+_Backend:_
+- ติดตั้ง packages: bcryptjs, jsonwebtoken, cookie-parser, express-rate-limit + types
+- `models/user.model.ts` — Mongoose schema: username, password, role (admin/user), timestamps
+- `repositories/user.repository.ts` — findByUsername, create, existsByUsername
+- `services/auth.service.ts` — trim/sanitize input, bcrypt.compare, jwt.sign → return token + user
+- `controllers/auth.controller.ts` — validate required fields, set httpOnly cookie, clearCookie on logout
+- `routes/auth.routes.ts` — POST /api/auth/login (+ rate limiter), POST /api/auth/logout
+- `middlewares/auth.middleware.ts` — verify JWT from cookie, attach user to req
+- `middlewares/rateLimiter.ts` — 10 attempts per 15 min per IP
+- `utils/seed.ts` — สร้าง admin/admin123 (bcrypt hash) ถ้ายังไม่มี
+- อัปเดต `app.ts` — เพิ่ม cookieParser, cors credentials, register /api/auth routes
+- อัปเดต `server.ts` — เรียก seedAdminUser() หลัง connectDatabase()
+- อัปเดต `config/env.ts` + `.env` — เพิ่ม FRONTEND_URL
+
+_Frontend:_
+- `types/auth.ts` — LoginRequest, AuthUser, LoginResponse interfaces
+- `services/auth.service.ts` — fetch POST /api/auth/login และ /logout พร้อม credentials: "include"
+- `app/login/page.tsx` — login form: username/password input, loading state, error message
+- `middleware.ts` — redirect /chat, /documents → /login ถ้าไม่มี token; redirect /login → / ถ้ามี token
+
+**My Adjustment:**
+- เพิ่ม Refresh Token: accessToken (15m) + refreshToken (7d) แยก secret คนละตัว
+- เพิ่ม field `refreshToken` ใน User model สำหรับ revocation — logout จะ clear ทั้งใน DB และ cookie
+- เพิ่ม `POST /api/auth/refresh` endpoint — verify refreshToken จาก cookie และ DB → issue accessToken ใหม่
+- เพิ่ม `refresh()` ใน frontend `auth.service.ts`
+
+**Git Commit:**
+```
+feat: implement full login flow with JWT authentication
+
+- Add User model, repository, service, controller, and routes
+- Hash password with bcryptjs, sign/verify JWT in httpOnly cookie
+- Add rate limiter (10 attempts/15min) on login endpoint
+- Seed admin user (admin/admin123) on server start
+- Add Next.js login page with loading/error states
+- Add route protection middleware for /chat and /documents
+```
