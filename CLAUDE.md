@@ -301,7 +301,7 @@ Refresh token
 - Chat UI เชื่อมกับ api ให้ถามตอบได้ 
 
 
-## Session 7 — Upload Document And RAG Preparation [x]
+## Session 7 — Upload Document And RAG Preparation [ ]
 
 Create document upload and preparation flow for future RAG functionality.
 
@@ -369,6 +369,11 @@ Keep UI reusable and modular
   ##  7.1 fix
 - fix 1: ส่วนของ uplaod documents ใหย้ายอยู่หน้า E:\project\trainee-knowledge-assistant\frontend\src\app\chat\page.tsx 
   ให้มีปุ่ม upload ข้าง input chat  เหมือนแชตบอททั่วไป
-
+- fix 2: แก้ erorr 2026-05-07 23:25:41 Server running on port 4000
+2026-05-07 23:28:56 TypeError: pdfParse is not a function
+2026-05-07 23:28:56     at parsePdf (/app/dist/utils/fileParser.js:13:26)
+2026-05-07 23:28:56     at async Object.parse (/app/dist/services/document.service.js:10:20)
+2026-05-07 23:28:56     at async upload (/app/dist/controllers/document.controller.js:12:28)
+ขึ้นตอนอัปโหลดไฟล์
 
           

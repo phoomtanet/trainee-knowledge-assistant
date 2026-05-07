@@ -250,6 +250,11 @@ feat: connect Chat UI to OpenRouter API
 - เมื่ออัปโหลด error: แสดง status badge สีแดง + auto-dismiss 4 วินาที
 - ระหว่างอัปโหลด: spinner + disable ปุ่ม 📎
 
+**fix2 — แก้ TypeError: pdfParse is not a function ตอนอัปโหลด PDF:**
+- Root Cause: TypeScript compile `require("pdf-parse")` แล้วผล object มี `.default` property — ทำให้ call โดยตรงไม่ได้
+- Fix 1: `backend/src/utils/fileParser.ts` — เปลี่ยนเป็น `const _pdfMod = require("pdf-parse"); const pdfParse = (_pdfMod.default ?? _pdfMod)` เพื่อ unwrap .default อัตโนมัติ
+- Fix 2: `backend/Dockerfile` — เพิ่ม `RUN mkdir -p uploads` ใน runner stage เพื่อสร้าง directory ที่ multer ต้องการ
+
 **Git Commit:**
 ```
 feat: add document upload API and upload UI
@@ -258,4 +263,5 @@ feat: add document upload API and upload UI
 - Add pdf-parse and txt file parser utilities
 - Add document service, controller, and route (POST /api/documents/upload)
 - fix1: move upload into chat page with paperclip button next to input
+- fix2: fix pdfParse not a function by unwrapping .default, add uploads dir in Dockerfile
 ```
