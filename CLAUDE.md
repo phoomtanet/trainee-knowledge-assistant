@@ -173,3 +173,82 @@ frontend/
 └── README.md
 ```
 
+---
+
+## Session 2 — Create Service Layer [x]
+
+Create a clean and scalable service layer for the application.
+
+Requirements:
+
+Create reusable service structure
+Separate API logic from UI components
+Create centralized API/client configuration
+Prepare scalable architecture for future features
+Handle API requests and responses cleanly
+Handle errors consistently
+Support environment variables/configuration
+Keep implementation modular and maintainable
+
+Architecture:
+
+Separate services by feature/domain
+Separate API client configuration into dedicated files
+Separate request/response types into type files
+Keep services reusable and scalable
+Avoid duplicated request logic
+Keep files small and focused on single responsibility
+
+
+Structure
+backend/
+├── src/
+│
+│   ├── config/
+│   ├── routes/
+│   ├── controllers/
+│   ├── services/
+│   ├── repositories/
+│   ├── models/
+│   ├── middlewares/
+│   ├── lib/
+│   ├── utils/
+│   ├── types/
+│   ├── constants/
+│
+│   ├── app.ts
+│   └── server.ts
+│
+├── uploads/
+├── docker/
+├── .env
+├── .env.example
+├── Dockerfile
+├── docker-compose.yml
+├── package.json
+└── tsconfig.json
+Architecture Flow
+Route
+  ↓
+Controller
+  ↓
+Service
+  ↓
+Repository
+  ↓
+Database
+Responsibility
+routes/ → API endpoints
+controllers/ → request/response handling
+services/ → business logic
+repositories/ → database queries
+models/ → database schema/models
+middlewares/ → auth/error/upload middleware
+lib/ → external clients/config
+utils/ → helper functions
+types/ → TypeScript types/interfaces
+constants/ → constant values/config
+Add .gitkeep to the empty structure.
+
+
+---

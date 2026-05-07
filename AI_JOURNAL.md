@@ -38,3 +38,39 @@ feat: scaffold Next.js 14 frontend structure and add get started page
 ```
 
 ---
+
+## Session 2
+
+**Prompt:**
+สร้าง backend service layer ตาม architecture ใน CLAUDE.md — Express.js + TypeScript + clean architecture
+
+**AI Response:**
+- สร้าง `backend/` directory structure ครบตาม spec: config, routes, controllers, services, repositories, models, middlewares, lib, utils, types, constants
+- สร้าง `package.json` — dependencies: express, cors, dotenv, mongoose, multer / devDependencies: typescript, ts-node, nodemon, @types/*
+- สร้าง `tsconfig.json` — target ES2020, commonjs, strict mode, outDir: dist
+- สร้าง `src/config/env.ts` — centralized env config พร้อม type-safe ด้วย `as const`
+- สร้าง `src/config/database.ts` — MongoDB connection/disconnection ผ่าน mongoose
+- สร้าง `src/types/common.ts` — ApiResponse, PaginatedResponse, RequestWithUser interfaces
+- สร้าง `src/middlewares/errorHandler.ts` — AppError class + centralized error middleware
+- สร้าง `src/utils/response.ts` — sendSuccess, sendCreated, sendPaginated helpers
+- สร้าง `src/constants/index.ts` — HTTP_STATUS และ MESSAGES constants
+- อัปเดต `src/app.ts` — ใช้ errorHandler จาก middleware แทน inline handler
+- อัปเดต `src/server.ts` — เรียก connectDatabase() ก่อน listen
+- สร้าง `.env`, `.env.example`, `Dockerfile`, `docker-compose.yml` (backend + MongoDB + Qdrant)
+- เพิ่ม `.gitkeep` ใน 13 directories ว่าง (src subdirs + uploads + docker)
+
+**My Adjustment:**
+- รวม backend services (backend, mongodb, qdrant) เข้า root `docker-compose.yml` เดียวกับ frontend — สามารถรัน `docker-compose up` จาก root เพื่อ start ทุก service พร้อมกัน
+- ลบ `backend/docker-compose.yml` ออก เพราะถูกแทนที่ด้วย root compose แล้ว
+- backend service ใช้ `context: ./backend, dockerfile: Dockerfile` — build จาก `backend/Dockerfile` โดยตรง
+
+**Git Commit:**
+```
+feat: scaffold backend service layer with Express.js and TypeScript
+
+- Add clean architecture structure (routes/controllers/services/repositories)
+- Add centralized config for env variables and MongoDB connection
+- Add consistent error handling with AppError class and middleware
+- Add shared types, response helpers, and HTTP constants
+- Add Docker setup with MongoDB and Qdrant services
+```
