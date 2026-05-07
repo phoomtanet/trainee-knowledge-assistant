@@ -219,3 +219,36 @@ feat: connect Chat UI to OpenRouter API
 - Add frontend chat service and types
 - Replace placeholder response with real AI reply in chat page
 ```
+
+---
+
+## Session 7
+
+**Prompt:**
+สร้าง Document Upload และ RAG Preparation — upload API สำหรับ PDF/TXT, validate, parse text, Upload UI
+
+**AI Response:**
+- ติดตั้ง `pdf-parse` + `@types/pdf-parse`
+- สร้าง `backend/src/types/document.ts` — ParsedDocument interface
+- สร้าง `backend/src/utils/fileParser.ts` — `parsePdf()` (ใช้ pdf-parse via require()), `parseTxt()` (fs.readFile utf-8)
+- สร้าง `backend/src/middlewares/upload.middleware.ts` — multer: diskStorage, UUID filename, filter PDF/TXT only, max 10MB
+- สร้าง `backend/src/services/document.service.ts` — เรียก parser ตาม mimetype, return ParsedDocument
+- สร้าง `backend/src/controllers/document.controller.ts` — validate req.file, return filename/size/mimetype/preview (500 chars)
+- สร้าง `backend/src/routes/document.routes.ts` — POST `/api/documents/upload` ป้องกันด้วย `authenticate`
+- อัปเดต `backend/src/app.ts` — register `/api/documents`
+- สร้าง `frontend/src/types/document.ts` — UploadResponse interface
+- สร้าง `frontend/src/services/document.service.ts` — FormData POST พร้อม credentials: include
+- สร้าง `frontend/src/app/documents/page.tsx` — Upload UI: drag & drop zone, loading spinner, success card (preview), error state, nav bar
+
+**My Adjustment:**
+[รอ manual review จาก developer]
+
+**Git Commit:**
+```
+feat: add document upload API and upload UI
+
+- Add multer upload middleware (PDF/TXT only, 10MB limit, UUID filename)
+- Add pdf-parse and txt file parser utilities
+- Add document service, controller, and route (POST /api/documents/upload)
+- Add frontend upload page with drag & drop, loading, success, error states
+```

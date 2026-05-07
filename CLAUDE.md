@@ -300,3 +300,68 @@ Refresh token
 - โดยใช้  key OPENROUTER_API_KEY และ โมเดล OPENROUTER_MODEL  จาก.env
 - Chat UI เชื่อมกับ api ให้ถามตอบได้ 
 
+
+## Session 7 — Upload Document And RAG Preparation [x]
+
+Create document upload and preparation flow for future RAG functionality.
+
+Requirements:
+
+Create upload API for PDF/TXT files
+Validate file type and file size
+Sanitize upload path and filenames
+Save uploaded files safely
+Parse text from PDF/TXT files
+Prepare document text for future chunking/embedding
+Keep implementation modular and scalable
+Handle upload and parsing errors properly
+
+Architecture:
+
+Separate routes, controllers, and services clearly
+Separate upload logic from parsing logic
+Separate reusable helper functions into utils/
+Separate request/response types into dedicated files
+Keep files reusable and focused on single responsibility
+Avoid duplicated logic
+
+Suggested Flow:
+
+Upload File
+    ↓
+Validate File
+    ↓
+Save File
+    ↓
+Parse Text
+    ↓
+Return Parsed Content
+
+Suggested Structure:
+
+backend/src/
+├── routes/
+├── controllers/
+├── services/
+├── middlewares/
+├── utils/
+├── types/
+└── lib/
+
+Technical Requirements:
+
+Use TypeScript
+Use async/await
+Use multer for upload handling
+Use pdf-parse for PDF parsing
+Support TXT file parsing
+Use environment variables when needed
+Handle invalid files safely
+
+Frontend Requirements:
+
+Create upload UI
+Allow selecting PDF/TXT files
+Show upload loading state
+Show upload success/error state
+Keep UI reusable and modular
