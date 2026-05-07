@@ -419,4 +419,28 @@ Keep chunking reusable
 Keep vector search reusable
 Handle invalid embedding responses safely
 
-          
+
+---
+
+## Session 9 — RAG Chat Integration [x]
+
+เชื่อม Vector Search เข้ากับ Chat API เพื่อให้ AI ตอบคำถามจากเนื้อหาเอกสารที่อัปโหลดได้
+
+Requirements:
+
+- เมื่อ user ส่ง message ให้ค้นหา document chunks ที่เกี่ยวข้องจาก Qdrant ก่อน
+- นำ chunks ที่ได้มาสร้างเป็น system context ส่งให้ AI
+- ถ้าไม่มี document ใน Qdrant ให้ AI ตอบตามปกติ (ไม่ error)
+- Chat UI แสดงผลตามปกติ ไม่ต้องเปลี่ยน UI
+
+Architecture:
+
+- แก้ chat.service.ts (backend) — ก่อน call AI ให้ search Qdrant แล้ว inject context
+- แยก logic การสร้าง system prompt ออกเป็น util
+
+Technical Requirements:
+
+- Use searchService ที่สร้างใน Session 8
+- Inject context เป็น system message ก่อน user messages
+- Handle กรณีที่ Qdrant ยังไม่มี collection หรือ search ล้มเหลว (fallback ตอบปกติ)
+- ไม่แก้ frontend

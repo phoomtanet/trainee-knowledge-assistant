@@ -296,3 +296,31 @@ feat: add vector embedding and Qdrant integration for RAG
 - Add search service for semantic similarity search
 - Wire embedding into document upload flow (best-effort)
 ```
+
+---
+
+## Session 9
+
+**Prompt:**
+เชื่อม Vector Search เข้ากับ Chat API (RAG) — ให้ AI ตอบคำถามจากเนื้อหาเอกสารที่อัปโหลด
+
+**AI Response:**
+- สร้าง `backend/src/utils/contextBuilder.ts` — `buildSystemContext()` รับ SearchResult[] แล้วสร้าง system prompt พร้อม chunks และ source filename
+- อัปเดต `backend/src/services/chat.service.ts`:
+  - ดึง last user message → `searchService.search(query, 3)` → `buildSystemContext()`
+  - ถ้ามี context: prepend `{ role: "system", content: context }` ก่อน user messages
+  - ถ้า search ล้มเหลว (Qdrant ไม่พร้อม/collection ไม่มี): fallback ตอบปกติ ไม่ error
+  - Frontend ไม่ต้องเปลี่ยนเลย
+
+**My Adjustment:**
+[รอ manual review จาก developer]
+
+**Git Commit:**
+```
+feat: integrate RAG into chat — search Qdrant context before AI call
+
+- Add contextBuilder util to format document chunks as system prompt
+- Update chat service to search Qdrant with last user message
+- Inject relevant chunks as system context before forwarding to OpenRouter
+- Fallback to normal chat if no documents found or Qdrant unavailable
+```

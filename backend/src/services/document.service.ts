@@ -19,8 +19,8 @@ export const documentService = {
     let chunksStored = 0;
     try {
       chunksStored = await embeddingService.storeDocument(text, file.originalname);
-    } catch {
-      // silently skip embedding if not configured
+    } catch (err) {
+      console.error("[embedding] failed:", err instanceof Error ? err.message : err);
     }
 
     return {
