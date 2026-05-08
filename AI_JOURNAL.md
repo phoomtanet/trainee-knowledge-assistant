@@ -726,3 +726,25 @@ feat: add SSE streaming response with typewriter effect
 docs: add README.md with setup instructions and feature checklist
 ```
 
+---
+
+## Session 20
+
+**Prompt:**
+สร้าง DECISIONS.md ที่ project root อธิบาย 3 architecture decisions สำคัญ อย่างละ 100-200 คำ
+
+**AI Response:**
+- สร้าง `DECISIONS.md` ที่ root `trainee-knowledge-assistant/`
+- **Decision 1: MongoDB over PostgreSQL/SQLite** — document model เหมาะกับ nested messages array, single fetch ไม่ต้อง join, mongo:7 integrate กับ docker compose ได้ง่าย
+- **Decision 2: Qdrant over Chroma/Pinecone** — official Docker image + named volume, REST API รองรับ LangChain QdrantVectorStore, self-hosted ไม่ต้องพึ่ง external service, /healthz ใช้ทำ healthcheck ได้ทันที
+- **Decision 3: OpenRouter over Direct OpenAI API** — single API key รองรับทั้ง LLM และ embedding, เปลี่ยน model ได้ด้วย env var โดยไม่แก้ code, free-tier ใช้งานได้ระหว่าง development
+- ทุก decision มีครบ: Context / Alternatives Considered / Why [Choice] / Trade-offs
+
+**My Adjustment:**
+[รอ manual review จาก developer]
+
+**Git Commit:**
+```
+docs: add DECISIONS.md with 3 architecture decisions
+```
+

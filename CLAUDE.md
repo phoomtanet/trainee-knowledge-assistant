@@ -616,7 +616,7 @@ Requirements:
 
 ---
 
-## Session 20 — DECISIONS.md [ ]
+## Session 20 — DECISIONS.md [x]
 
 สร้าง `DECISIONS.md` ที่ project root อธิบาย 3 decisions สำคัญ
 
