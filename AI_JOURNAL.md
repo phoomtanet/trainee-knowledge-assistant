@@ -423,3 +423,29 @@ feat: add Markdown rendering to AI chat responses
 - Style code blocks, inline code, lists, tables for dark theme
 - Keep user bubble as plain text
 ```
+
+---
+
+## Session 13
+
+**Prompt:**
+เพิ่ม Rate Limiting ให้ครอบคลุม chat และ upload routes
+
+**AI Response:**
+- `express-rate-limit` ติดตั้งอยู่แล้ว และมี `loginRateLimiter` แล้ว
+- เพิ่ม `chatRateLimiter` (30 req/min) และ `uploadRateLimiter` (10 req/min) ใน `middlewares/rateLimiter.ts`
+- apply `chatRateLimiter` ใน `routes/chat.routes.ts` ก่อน `authenticate`
+- apply `uploadRateLimiter` ใน `routes/document.routes.ts` ก่อน `authenticate`
+- ตอบ 429 พร้อม message อ่านง่ายเมื่อเกิน limit
+
+**My Adjustment:**
+[รอ manual review จาก developer]
+
+**Git Commit:**
+```
+feat: add rate limiting to chat and upload routes
+
+- Add chatRateLimiter (30 req/min) and uploadRateLimiter (10 req/min)
+- Apply limiters to /api/chat and /api/documents/upload
+- Existing loginRateLimiter (10 req/15min) unchanged
+```
