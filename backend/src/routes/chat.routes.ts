@@ -6,5 +6,6 @@ import { chatRateLimiter } from "../middlewares/rateLimiter";
 const router = Router();
 
 router.post("/", chatRateLimiter, authenticate, chatController.chat);
+router.post("/stream", chatRateLimiter, authenticate, chatController.streamChat);
 
 export default router;

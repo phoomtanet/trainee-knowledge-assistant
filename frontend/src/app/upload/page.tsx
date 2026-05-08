@@ -18,6 +18,7 @@ interface Message {
   content: string;
   tokenUsage?: TokenUsage;
   sources?: string[];
+  isStreaming?: boolean;
 }
 
 type ChildProps = { children?: React.ReactNode };
@@ -223,25 +224,44 @@ export default function UploadPage() {
       } catch { /* continue */ }
     }
 
+    const aiMsgId = crypto.randomUUID();
+    setMessages((prev) => [...prev, { id: aiMsgId, role: "assistant", content: "", isStreaming: true }]);
+
     try {
       const history: ChatMessage[] = nextMessages.map((m) => ({ role: m.role, content: m.content }));
-      const result = await chatService.send(history, activeFileRef.current ?? undefined);
-      const aiMsg: Message = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: result.reply,
-        tokenUsage: result.tokenUsage,
-        sources: result.sources,
-      };
-      const finalMessages = [...nextMessages, aiMsg];
-      setMessages(finalMessages);
-      setTotalTokens((t) => t + (result.tokenUsage?.totalTokens ?? 0));
-      if (convId) await autoSave(finalMessages, convId);
+      let fullContent = "";
+      let finalMessages: Message[] = [];
+
+      for await (const event of chatService.stream(history, activeFileRef.current ?? undefined)) {
+        if (event.type === "token") {
+          fullContent += event.content;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === aiMsgId ? { ...m, content: fullContent } : m))
+          );
+        } else if (event.type === "done") {
+          setMessages((prev) => {
+            const updated = prev.map((m) =>
+              m.id === aiMsgId
+                ? { ...m, content: fullContent, tokenUsage: event.tokenUsage, sources: event.sources, isStreaming: false }
+                : m
+            );
+            finalMessages = updated;
+            return updated;
+          });
+          setTotalTokens((t) => t + (event.tokenUsage?.totalTokens ?? 0));
+          if (convId) await autoSave(finalMessages, convId);
+        } else if (event.type === "error") {
+          throw new Error(event.message);
+        }
+      }
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        { id: crypto.randomUUID(), role: "assistant", content: "เกิดข้อผิดพลาด ไม่สามารถเชื่อมต่อ AI ได้" },
-      ]);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === aiMsgId
+            ? { ...m, content: "เกิดข้อผิดพลาด ไม่สามารถเชื่อมต่อ AI ได้", isStreaming: false }
+            : m
+        )
+      );
     } finally {
       setChatLoading(false);
     }
@@ -372,11 +392,21 @@ export default function UploadPage() {
                         : "bg-gray-800 text-gray-100 rounded-bl-sm"
                     }`}
                   >
-                    {msg.role === "user" ? msg.content : (
-                      <ReactMarkdown remarkPlugins={[remarkGfm]} components={MD_COMPONENTS}>
-                        {msg.content}
-                      </ReactMarkdown>
-                    )}
+                    {msg.role === "user" ? msg.content
+                      : msg.isStreaming && !msg.content ? (
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                        </span>
+                      ) : (
+                        <>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]} components={MD_COMPONENTS}>
+                            {msg.content}
+                          </ReactMarkdown>
+                          {msg.isStreaming && <span className="inline-block w-0.5 h-4 bg-gray-400 animate-pulse ml-0.5 align-middle" />}
+                        </>
+                      )}
                   </div>
                   {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
                     <div className="flex flex-wrap gap-1 ml-1">
@@ -405,16 +435,6 @@ export default function UploadPage() {
               </div>
             )}
 
-            {chatLoading && (
-              <div className="flex justify-start">
-                <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center text-xs font-bold mr-2 shrink-0">AI</div>
-                <div className="bg-gray-800 px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1.5">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
-                </div>
-              </div>
-            )}
 
             <div ref={bottomRef} />
           </main>

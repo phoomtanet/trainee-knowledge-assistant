@@ -17,6 +17,7 @@ interface Message {
   content: string;
   tokenUsage?: TokenUsage;
   sources?: string[];
+  isStreaming?: boolean;
 }
 
 const WELCOME: Message = {
@@ -122,30 +123,48 @@ export default function ChatPage() {
       }
     }
 
+    const aiMsgId = crypto.randomUUID();
+    setMessages((prev) => [...prev, { id: aiMsgId, role: "assistant", content: "", isStreaming: true }]);
+
     try {
       const history: ChatMessage[] = messages
         .filter((m) => m.id !== "welcome")
         .map((m) => ({ role: m.role, content: m.content }));
       history.push({ role: "user", content: text });
 
-      const result = await chatService.send(history);
-      const aiMsg: Message = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: result.reply,
-        tokenUsage: result.tokenUsage,
-        sources: result.sources,
-      };
-      const finalMessages = [...nextMessages, aiMsg];
-      setMessages(finalMessages);
-      setTotalTokens((prev) => prev + (result.tokenUsage?.totalTokens ?? 0));
+      let fullContent = "";
+      let finalMessages: Message[] = [];
 
-      if (convId) await autoSave(finalMessages, convId);
+      for await (const event of chatService.stream(history)) {
+        if (event.type === "token") {
+          fullContent += event.content;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === aiMsgId ? { ...m, content: fullContent } : m))
+          );
+        } else if (event.type === "done") {
+          setMessages((prev) => {
+            const updated = prev.map((m) =>
+              m.id === aiMsgId
+                ? { ...m, content: fullContent, tokenUsage: event.tokenUsage, sources: event.sources, isStreaming: false }
+                : m
+            );
+            finalMessages = updated;
+            return updated;
+          });
+          setTotalTokens((prev) => prev + (event.tokenUsage?.totalTokens ?? 0));
+          if (convId) await autoSave(finalMessages, convId);
+        } else if (event.type === "error") {
+          throw new Error(event.message);
+        }
+      }
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        { id: crypto.randomUUID(), role: "assistant", content: "เกิดข้อผิดพลาด ไม่สามารถเชื่อมต่อ AI ได้ กรุณาลองใหม่อีกครั้ง" },
-      ]);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === aiMsgId
+            ? { ...m, content: "เกิดข้อผิดพลาด ไม่สามารถเชื่อมต่อ AI ได้ กรุณาลองใหม่อีกครั้ง", isStreaming: false }
+            : m
+        )
+      );
     } finally {
       setLoading(false);
     }
@@ -254,35 +273,44 @@ export default function ChatPage() {
                   >
                     {msg.role === "user" ? (
                       msg.content
+                    ) : msg.isStreaming && !msg.content ? (
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                      </span>
                     ) : (
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                          h1: ({ children }) => <h1 className="text-base font-bold mb-2">{children}</h1>,
-                          h2: ({ children }) => <h2 className="text-sm font-bold mb-1">{children}</h2>,
-                          h3: ({ children }) => <h3 className="text-sm font-semibold mb-1">{children}</h3>,
-                          ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-0.5">{children}</ul>,
-                          ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-0.5">{children}</ol>,
-                          li: ({ children }) => <li>{children}</li>,
-                          strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
-                          em: ({ children }) => <em className="italic text-gray-300">{children}</em>,
-                          a: ({ href, children }) => <a href={href} className="text-blue-400 underline hover:text-blue-300" target="_blank" rel="noopener noreferrer">{children}</a>,
-                          blockquote: ({ children }) => <blockquote className="border-l-2 border-gray-500 pl-3 text-gray-400 italic my-2">{children}</blockquote>,
-                          pre: ({ children }) => <pre className="bg-gray-900 rounded-lg p-3 overflow-x-auto my-2 text-xs font-mono">{children}</pre>,
-                          code: ({ className, children }) => {
-                            const isBlock = /language-/.test(className || "");
-                            return isBlock
-                              ? <code className={className}>{children}</code>
-                              : <code className="bg-gray-700 px-1 py-0.5 rounded text-xs font-mono text-pink-300">{children}</code>;
-                          },
-                          table: ({ children }) => <table className="w-full text-xs border-collapse my-2">{children}</table>,
-                          th: ({ children }) => <th className="border border-gray-600 px-2 py-1 bg-gray-700 font-semibold text-left">{children}</th>,
-                          td: ({ children }) => <td className="border border-gray-600 px-2 py-1">{children}</td>,
-                        }}
-                      >
-                        {msg.content}
-                      </ReactMarkdown>
+                      <>
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                            h1: ({ children }) => <h1 className="text-base font-bold mb-2">{children}</h1>,
+                            h2: ({ children }) => <h2 className="text-sm font-bold mb-1">{children}</h2>,
+                            h3: ({ children }) => <h3 className="text-sm font-semibold mb-1">{children}</h3>,
+                            ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-0.5">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-0.5">{children}</ol>,
+                            li: ({ children }) => <li>{children}</li>,
+                            strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                            em: ({ children }) => <em className="italic text-gray-300">{children}</em>,
+                            a: ({ href, children }) => <a href={href} className="text-blue-400 underline hover:text-blue-300" target="_blank" rel="noopener noreferrer">{children}</a>,
+                            blockquote: ({ children }) => <blockquote className="border-l-2 border-gray-500 pl-3 text-gray-400 italic my-2">{children}</blockquote>,
+                            pre: ({ children }) => <pre className="bg-gray-900 rounded-lg p-3 overflow-x-auto my-2 text-xs font-mono">{children}</pre>,
+                            code: ({ className, children }) => {
+                              const isBlock = /language-/.test(className || "");
+                              return isBlock
+                                ? <code className={className}>{children}</code>
+                                : <code className="bg-gray-700 px-1 py-0.5 rounded text-xs font-mono text-pink-300">{children}</code>;
+                            },
+                            table: ({ children }) => <table className="w-full text-xs border-collapse my-2">{children}</table>,
+                            th: ({ children }) => <th className="border border-gray-600 px-2 py-1 bg-gray-700 font-semibold text-left">{children}</th>,
+                            td: ({ children }) => <td className="border border-gray-600 px-2 py-1">{children}</td>,
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                        {msg.isStreaming && <span className="inline-block w-0.5 h-4 bg-gray-400 animate-pulse ml-0.5 align-middle" />}
+                      </>
                     )}
                   </div>
                   {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
@@ -303,16 +331,6 @@ export default function ChatPage() {
               </div>
             ))}
 
-            {loading && (
-              <div className="flex justify-start">
-                <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold mr-2 shrink-0">AI</div>
-                <div className="bg-gray-800 px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1.5">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
-                </div>
-              </div>
-            )}
 
             <div ref={bottomRef} />
           </main>

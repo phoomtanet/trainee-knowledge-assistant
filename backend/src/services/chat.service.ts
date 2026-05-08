@@ -42,22 +42,32 @@ const searchContext = async (
   }
 };
 
+const prepareMessages = async (
+  messages: ChatMessage[],
+  filename?: string
+): Promise<{ openRouterMessages: OpenRouterMessage[]; sources: string[] }> => {
+  let sources: string[] = [];
+  const openRouterMessages: OpenRouterMessage[] = [];
+
+  if (filename) {
+    const { context, sources: s } = await searchContext(messages, filename);
+    sources = s;
+    if (context) openRouterMessages.push({ role: "system", content: context });
+  }
+
+  openRouterMessages.push(...messages);
+  return { openRouterMessages, sources };
+};
+
 export const chatService = {
+  prepareMessages,
+
   chat: async (messages: ChatMessage[], filename?: string): Promise<ChatResult> => {
     if (!env.openrouterApiKey) {
       throw new AppError(500, "OpenRouter API key not configured");
     }
 
-    let sources: string[] = [];
-    const openRouterMessages: OpenRouterMessage[] = [];
-
-    if (filename) {
-      const { context, sources: s } = await searchContext(messages, filename);
-      sources = s;
-      if (context) openRouterMessages.push({ role: "system", content: context });
-    }
-
-    openRouterMessages.push(...messages);
+    const { openRouterMessages, sources } = await prepareMessages(messages, filename);
 
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -65,10 +75,7 @@ export const chatService = {
         Authorization: `Bearer ${env.openrouterApiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: env.openrouterModel,
-        messages: openRouterMessages,
-      }),
+      body: JSON.stringify({ model: env.openrouterModel, messages: openRouterMessages }),
     });
 
     if (!res.ok) {
