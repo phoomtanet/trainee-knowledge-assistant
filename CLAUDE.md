@@ -533,7 +533,7 @@ Requirements:
 
 ---
 
-## Session 16 — Unit Tests [ ]
+## Session 16 — Unit Tests [x]
 
 เขียน unit test ให้ได้ coverage ≥ 40%
 
@@ -582,7 +582,7 @@ Requirements:
 
 ---
 
-## Session 18 — Streaming Response [ ]
+## Session 18 — Streaming Response [X]
 
 แสดงคำตอบ AI แบบ streaming (ทีละ token)
 

@@ -1,0 +1,16 @@
+export const env = {
+  port: "4000",
+  nodeEnv: "test",
+  mongodbUri: "mongodb://localhost:27017/test",
+  qdrantUrl: "http://localhost:6333",
+  qdrantCollection: "test",
+  openaiApiKey: "test-openai-key",
+  jwtSecret: "test-secret",
+  accessTokenExpiresIn: "15m",
+  refreshTokenSecret: "test-refresh-secret",
+  refreshTokenExpiresIn: "7d",
+  frontendUrl: "http://localhost:3000",
+  openrouterApiKey: "test-openrouter-key",
+  openrouterModel: "test-model",
+  embeddingModel: "test-embedding-model",
+} as const;

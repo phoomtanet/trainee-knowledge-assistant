@@ -4,7 +4,9 @@
   "scripts": {
     "dev": "nodemon src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "nodemonConfig": {
     "watch": [
@@ -34,11 +36,14 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.12.7",
     "@types/pdf-parse": "^1.1.5",
+    "jest": "^30.4.1",
     "nodemon": "^3.1.0",
+    "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   }
