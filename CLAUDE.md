@@ -594,3 +594,46 @@ Requirements:
 - Frontend: ใช้ `fetch` + `ReadableStream` รับ SSE
 - แสดงข้อความ AI ที่กำลัง stream ใน bubble แบบ typewriter effect
 - token usage ยังแสดงได้เมื่อ stream จบ (จาก `[DONE]` event)
+
+---
+
+## Session 19 — README.md [x]
+
+สร้าง `README.md` ที่ project root ตามรูปแบบที่โจทย์กำหนด
+
+Requirements:
+
+- สร้างไฟล์ `README.md` ที่ `e:\project\trainee-knowledge-assistant\README.md`
+- ต้องมี sections ครบตามโจทย์:
+  - `# Knowledge Assistant`
+  - `## Tech Stack` — framework, database, vector DB
+  - `## Setup & Run` — 1-command setup (`docker compose up --build -d`)
+  - `## Features Done` — checklist ของทุก feature ที่ทำเสร็จ
+  - `## Architecture` — brief description ของ architecture
+  - `## Known Issues` — สิ่งที่รู้ว่ายังไม่ดีพอ
+- เขียนเป็นภาษาอังกฤษ
+- ห้าม hardcode secrets หรือ API keys
+
+---
+
+## Session 20 — DECISIONS.md [ ]
+
+สร้าง `DECISIONS.md` ที่ project root อธิบาย 3 decisions สำคัญ
+
+Requirements:
+
+- สร้างไฟล์ `DECISIONS.md` ที่ `e:\project\trainee-knowledge-assistant\DECISIONS.md`
+- อธิบาย 3 decisions โดยใช้ template:
+  ```
+  ## Decision N: Title
+  ### Context
+  ### Alternatives Considered
+  ### Why [Choice]
+  ### Trade-offs
+  ```
+- แต่ละ decision ยาว 100-200 คำ
+- Decisions ที่แนะนำ:
+  1. MongoDB over PostgreSQL/SQLite
+  2. Qdrant over Chroma/Pinecone
+  3. OpenRouter over direct OpenAI API
+- เขียนเป็นภาษาอังกฤษ
