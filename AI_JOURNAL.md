@@ -612,3 +612,54 @@ feat: separate chat and document history, add RAG-per-file upload chat
 - /chat page: pure chatbot with type=chat conversations
 ```
 
+---
+
+## Session 18 — Streaming Response + Bug Fixes
+
+**Prompt:**
+1. ทำ Streaming Response
+2. กด upload ไฟล์ใหม่ไม่ได้ (bug fix)
+3. Too many login attempts รอ 15 นาที → ปรับเป็น 1 นาที
+4. แก้ CSS module error (globals.css)
+
+**AI Response:**
+
+Bug Fixes:
+- `middlewares/rateLimiter.ts` — เปลี่ยน `windowMs` ของ loginRateLimiter จาก `15 * 60 * 1000` เป็น `60 * 1000` (1 นาที)
+- `frontend/src/custom.d.ts` — สร้างใหม่ `declare module '*.css'` เพื่อแก้ TypeScript error สำหรับ CSS side-effect import
+- `app/upload/page.tsx` — ลบ `<input ref={fileInputRef}>` ที่ซ้อนอยู่ใน upload zone ออก เหลือแค่อันเดียวในฟอร์ม (แก้ปัญหา ref ชี้ผิดตัว)
+
+Streaming Response — Backend:
+- `chat.service.ts` — แยก `prepareMessages()` ออกมาเป็น function แยก (ทำ RAG search + build messages array) เพื่อให้ controller ใช้ร่วมได้
+- `chat.controller.ts` — เพิ่ม `streamChat()` handler: set SSE headers (`text/event-stream`), call OpenRouter `stream: true`, parse `data: {...}` chunks แล้ว forward ทีละ token, รวบรวม usage จาก chunk สุดท้าย, ส่ง `done` event พร้อม sources + tokenUsage เมื่อ `[DONE]`
+- `chat.routes.ts` — เพิ่ม `POST /stream` route
+
+Streaming Response — Frontend:
+- `types/chat.ts` — เพิ่ม `StreamEvent` type union (`token` | `done` | `error`)
+- `services/chat.service.ts` — เพิ่ม `stream()` async generator: fetch `/chat/stream`, อ่าน ReadableStream, parse SSE line-by-line, yield StreamEvent
+- `app/chat/page.tsx`:
+  - เพิ่ม `isStreaming?: boolean` ใน Message interface
+  - handleSend: เพิ่ม AI bubble ว่างก่อน (`isStreaming: true`), `for await` loop อัปเดต content ทีละ token
+  - Render: bubble ว่างแสดง dots, bubble ที่กำลัง stream แสดง content + blinking cursor `▋`
+  - ลบ loading dots bubble แยกออก
+- `app/upload/page.tsx` — เหมือนกับ chat page แต่ auto-summary ยังใช้ `send()` แบบเดิม (ไม่ต้อง stream)
+
+**My Adjustment:**
+-
+
+**Git Commit:**
+```
+feat: add SSE streaming response with typewriter effect
+
+- Extract prepareMessages() from chat service for reuse
+- Add POST /api/chat/stream endpoint with SSE format
+- Call OpenRouter with stream:true, parse and forward token chunks
+- Send done event with sources and tokenUsage on completion
+- Add stream() async generator to frontend chat service
+- Update chat and upload pages to render tokens as they arrive
+- Show blinking cursor while streaming, dots while waiting for first token
+- Fix: deduplicate file input ref in upload page
+- Fix: login rate limit window reduced from 15min to 1min
+- Fix: add CSS module type declaration for globals.css
+```
+
