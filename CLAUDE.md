@@ -518,7 +518,7 @@ Requirements:
 
 ---
 
-## Session 15 — Separate Upload Page [ ]
+## Session 15 — Separate Upload Page [x]
 
 แยก Upload Document ออกมาเป็นหน้าของตัวเอง `/upload` และลบ upload feature ออกจาก Chat Page
 
@@ -552,22 +552,33 @@ Requirements:
 
 ---
 
-## Session 17 — Conversation History [ ]
+## Session 17 — Conversation History [x]
 
 บันทึกและโหลดประวัติการสนทนา
 
 Requirements:
 
-- สร้าง `Conversation` model ใน MongoDB (userId, messages[], createdAt, updatedAt)
+- สร้าง `Conversation` model ใน MongoDB (userId, title, type, messages[], lastUploadedFile?, timestamps)
+- เพิ่ม field `type: "chat" | "document"` เพื่อแยกประวัติแชตบอทออกจากประวัติเอกสาร
 - API:
-  - `POST /api/conversations` — สร้าง/บันทึก conversation
-  - `GET /api/conversations` — ดึงรายการ conversations ของ user
+  - `POST /api/conversations` — สร้าง conversation (รับ `type` จาก body)
+  - `GET /api/conversations?type=chat|document` — ดึงรายการ conversations ของ user แยก type
   - `GET /api/conversations/:id` — โหลด conversation
-- Frontend:
-  - แสดง sidebar รายการ conversations
-  - กด load conversation → โหลด messages กลับมาใน chat
+  - `PUT /api/conversations/:id` — บันทึก messages
+  - `PATCH /api/conversations/:id/file` — อัปเดต lastUploadedFile
+- Frontend Chat (`/chat`):
+  - แสดง sidebar รายการ conversations (type=chat)
   - ปุ่ม "New Chat" สร้าง conversation ใหม่
   - auto-save หลังทุก AI reply
+  - load conversation → restore messages
+- Frontend Upload (`/upload`):
+  - แยกประวัติเป็น type=document
+  - sidebar แสดงรายการ conversations พร้อม icon 📄
+  - ต้อง upload ไฟล์ก่อนถึงจะพิมพ์ได้
+  - AI ตอบโดย RAG เฉพาะไฟล์ที่อัปโหลดในห้องนั้น (filter by filename ใน Qdrant)
+  - auto-save หลังทุก AI reply
+  - load conversation → restore messages และ activeFile
+- Chat service ใช้ RAG เมื่อมี filename ส่งมา ไม่มีก็ตอบปกติ
 
 ---
 

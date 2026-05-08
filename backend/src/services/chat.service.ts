@@ -27,11 +27,14 @@ interface OpenRouterResponse {
   usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
 }
 
-const searchContext = async (messages: ChatMessage[]): Promise<{ context: string; sources: string[] }> => {
+const searchContext = async (
+  messages: ChatMessage[],
+  filename: string
+): Promise<{ context: string; sources: string[] }> => {
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
   if (!lastUser) return { context: "", sources: [] };
   try {
-    const results = await searchService.search(lastUser.content, 3);
+    const results = await searchService.search(lastUser.content, 4, filename);
     const unique = [...new Set(results.map((r) => r.filename))];
     return { context: buildSystemContext(results), sources: unique };
   } catch {
@@ -40,17 +43,21 @@ const searchContext = async (messages: ChatMessage[]): Promise<{ context: string
 };
 
 export const chatService = {
-  chat: async (messages: ChatMessage[]): Promise<ChatResult> => {
+  chat: async (messages: ChatMessage[], filename?: string): Promise<ChatResult> => {
     if (!env.openrouterApiKey) {
       throw new AppError(500, "OpenRouter API key not configured");
     }
 
-    const { context, sources } = await searchContext(messages);
+    let sources: string[] = [];
+    const openRouterMessages: OpenRouterMessage[] = [];
 
-    const openRouterMessages: OpenRouterMessage[] = [
-      ...(context ? [{ role: "system" as const, content: context }] : []),
-      ...messages,
-    ];
+    if (filename) {
+      const { context, sources: s } = await searchContext(messages, filename);
+      sources = s;
+      if (context) openRouterMessages.push({ role: "system", content: context });
+    }
+
+    openRouterMessages.push(...messages);
 
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",

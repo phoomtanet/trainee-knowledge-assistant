@@ -6,6 +6,7 @@ import { env } from "./config/env";
 import authRoutes from "./routes/auth.routes";
 import chatRoutes from "./routes/chat.routes";
 import documentRoutes from "./routes/document.routes";
+import conversationRoutes from "./routes/conversation.routes";
 
 const app: Application = express();
 
@@ -21,6 +22,7 @@ app.get("/health", (_req: Request, res: Response) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/conversations", conversationRoutes);
 
 app.use(errorHandler);
 

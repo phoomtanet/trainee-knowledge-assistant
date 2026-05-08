@@ -9,23 +9,26 @@ export interface SearchResult {
 }
 
 export const searchService = {
-  search: async (query: string, topK = 3): Promise<SearchResult[]> => {
+  search: async (query: string, topK = 3, filenameFilter?: string): Promise<SearchResult[]> => {
     const queryVector = await embedQuery(query);
 
-    const results = await qdrantClient.search(env.qdrantCollection, {
+    const searchParams: Parameters<typeof qdrantClient.search>[1] = {
       vector: queryVector,
       limit: topK,
       with_payload: true,
-    });
+      ...(filenameFilter && {
+        filter: {
+          must: [{ key: "filename", match: { value: filenameFilter } }],
+        },
+      }),
+    };
 
-    return results.map((r) => {
-      const raw = (r.payload?.filename as string) || "";
-      const filename = Buffer.from(raw, "latin1").toString("utf8");
-      return {
-        text: (r.payload?.text as string) || "",
-        filename,
-        score: r.score,
-      };
-    });
+    const results = await qdrantClient.search(env.qdrantCollection, searchParams);
+
+    return results.map((r) => ({
+      text: (r.payload?.text as string) || "",
+      filename: (r.payload?.filename as string) || "",
+      score: r.score,
+    }));
   },
 };

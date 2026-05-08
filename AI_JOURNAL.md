@@ -518,3 +518,97 @@ feat: separate upload into dedicated /upload page
 - Add "อัปโหลดเอกสาร" nav link in Chat header
 - Protect /upload route in middleware
 ```
+
+---
+
+## Session 17
+
+**Prompt:**
+บันทึกและโหลดประวัติการสนทนา — สร้าง Conversation model ใน MongoDB, API สำหรับ CRUD, และ Frontend sidebar แสดงรายการ conversations
+
+**AI Response:**
+
+Backend:
+- สร้าง `backend/src/models/conversation.model.ts` — IConversation (userId, title, messages[], timestamps) และ IMessage (role, content, tokenUsage?, sources?)
+- สร้าง `backend/src/repositories/conversation.repository.ts` — create, findAllByUser, findByIdAndUser, updateMessages
+- สร้าง `backend/src/services/conversation.service.ts` — create (auto-title จาก firstMessage), save, list, get พร้อม AppError 404
+- สร้าง `backend/src/controllers/conversation.controller.ts` — create, save, list, get handlers
+- สร้าง `backend/src/routes/conversation.routes.ts` — POST /, GET /, GET /:id, PUT /:id (ทุก route ผ่าน authenticate)
+- อัปเดต `backend/src/app.ts` — register `/api/conversations`
+
+Frontend:
+- สร้าง `frontend/src/types/conversation.ts` — ConversationMessage, ConversationSummary, ConversationDetail interfaces
+- สร้าง `frontend/src/services/conversation.service.ts` — create, save, list, get API calls
+- อัปเดต `frontend/src/app/chat/page.tsx`:
+  - เพิ่ม sidebar แสดงรายการ conversations (toggle ได้ด้วยปุ่ม hamburger)
+  - ปุ่ม "New Chat" reset messages และ activeConvId
+  - auto-create conversation เมื่อ user ส่ง message แรก
+  - auto-save หลัง AI ตอบทุกครั้ง
+  - load conversation และ restore messages เมื่อกดใน sidebar
+
+**My Adjustment:**
+-
+
+**Git Commit:**
+```
+feat: add conversation history with sidebar and auto-save
+
+- Create Conversation model (userId, title, messages[])
+- Add CRUD API: POST/GET /api/conversations, GET/PUT /api/conversations/:id
+- Add sidebar to chat page with conversation list and New Chat button
+- Auto-create and auto-save conversation after each AI reply
+- Load conversation by clicking in sidebar
+```
+
+---
+
+## Session 17 — Additional Changes
+
+**Prompt:**
+1. chat ให้เป็นแชตบอทปกติ ไม่ต้องผูกกับไฟล์
+2. upload เพิ่มประวัติด้วย แล้วปรับให้อัปโหลดไฟล์ก่อนถึงถามได้ ถามได้แต่ตอบเป็นไฟล์ที่ส่งล่าสุดในห้องนั้นเท่านั้น
+3. ประวัติห้องแชต และประวัติเอกสาร แยกกัน
+
+**AI Response:**
+
+Backend:
+- `chat.service.ts` — ตัด RAG ออก ให้ AI ตอบจากความรู้ตัวเอง (ไม่ค้นหา Qdrant) สำหรับ /chat
+- `conversation.model.ts` — เพิ่ม `type: "chat" | "document"` และ `lastUploadedFile?: string`
+- `conversation.repository.ts` — เพิ่ม `updateFile()`, `findAllByUser()` filter ตาม type
+- `conversation.service.ts` — เพิ่ม `updateFile()`, `list()` และ `create()` รับ type
+- `conversation.controller.ts` — `create` รับ type จาก body, `list` รับ type จาก query string, เพิ่ม `updateFile` handler
+- `conversation.routes.ts` — เพิ่ม `PATCH /:id/file`
+- `search.service.ts` — เพิ่ม `filenameFilter` param ใน Qdrant search, ลบ double-decode ออก
+- `chat.service.ts` — restore RAG: ถ้ามี `filename` ให้ search Qdrant กรองเฉพาะไฟล์นั้น ถ้าไม่มีก็ตอบปกติ
+- `chat.controller.ts` — รับ `filename?` จาก request body ส่งต่อให้ service
+
+Frontend:
+- `types/conversation.ts` — เพิ่ม `lastUploadedFile?` ใน ConversationSummary และ ConversationDetail
+- `services/conversation.service.ts` — `create()` และ `list()` รับ `type`, เพิ่ม `updateFile()`
+- `services/chat.service.ts` — รับ `filename?` ส่งไปกับ request body
+- `app/chat/page.tsx` — ส่ง type `"chat"` ทุก call
+- `app/upload/page.tsx` — rewrite ใหม่ทั้งหมด:
+  - sidebar + conversation history (type=document)
+  - บล็อก input จนกว่าจะ upload ไฟล์
+  - เมื่อ upload → สร้าง conversation (type=document), บันทึก lastUploadedFile, AI สรุปไฟล์อัตโนมัติ
+  - เมื่อส่งข้อความ → pass filename ไปกับ chat request เพื่อ RAG เฉพาะไฟล์นั้น
+  - auto-save หลังทุก AI reply
+  - load conversation → restore messages + activeFile
+
+**My Adjustment:**
+-
+
+**Git Commit:**
+```
+feat: separate chat and document history, add RAG-per-file upload chat
+
+- Add type field (chat|document) to Conversation model
+- GET /api/conversations?type= filters by type
+- POST /api/conversations accepts type in body
+- Add PATCH /api/conversations/:id/file to store lastUploadedFile
+- Search service supports filenameFilter for Qdrant queries
+- Chat service uses RAG only when filename is provided
+- Rewrite /upload page: sidebar, conversation history, file-first gate, per-file RAG
+- /chat page: pure chatbot with type=chat conversations
+```
+
