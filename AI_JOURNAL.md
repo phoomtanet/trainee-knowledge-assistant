@@ -392,3 +392,34 @@ feat: add Docker healthchecks to all services
 - Fix IPv6 issue: use 127.0.0.1 instead of localhost in healthcheck URLs
 - Use bash /dev/tcp for qdrant (no wget/curl in qdrant image)
 ```
+
+---
+
+## Session 12
+
+**Prompt:**
+แสดง Markdown ในคำตอบของ AI — ติด react-markdown + wrap AI bubble
+
+**AI Response:**
+- ติดตั้ง `react-markdown@10` และ `remark-gfm`
+- อัปเดต `frontend/src/app/chat/page.tsx`:
+  - import `ReactMarkdown` และ `remarkGfm`
+  - AI bubble ใช้ `<ReactMarkdown remarkPlugins={[remarkGfm]}>` แทน plain text
+  - User bubble ยังคงเป็น plain text + `whitespace-pre-wrap`
+  - custom `components`: p, h1-h3, ul, ol, li, strong, em, a, blockquote, pre, code, table, th, td
+  - inline code: `bg-gray-700` + `text-pink-300` + monospace
+  - code block: `bg-gray-900` + rounded + overflow-x-auto
+  - ตรวจ inline vs block code ด้วย `/language-/.test(className)`
+
+**My Adjustment:**
+[รอ manual review จาก developer]
+
+**Git Commit:**
+```
+feat: add Markdown rendering to AI chat responses
+
+- Install react-markdown and remark-gfm
+- Render AI bubble content with ReactMarkdown (GFM support)
+- Style code blocks, inline code, lists, tables for dark theme
+- Keep user bubble as plain text
+```

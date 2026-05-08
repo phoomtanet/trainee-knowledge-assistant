@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, FormEvent, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { authService } from "@/services/auth.service";
 import { chatService } from "@/services/chat.service";
 import { documentService } from "@/services/document.service";
@@ -153,13 +155,42 @@ export default function ChatPage() {
             )}
             <div className="flex flex-col gap-1">
               <div
-                className={`max-w-[70%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+                className={`max-w-[70%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                   msg.role === "user"
-                    ? "bg-blue-600 text-white rounded-br-sm"
+                    ? "bg-blue-600 text-white rounded-br-sm whitespace-pre-wrap"
                     : "bg-gray-800 text-gray-100 rounded-bl-sm"
                 }`}
               >
-                {msg.content}
+                {msg.role === "user" ? msg.content : (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                      h1: ({ children }) => <h1 className="text-base font-bold mb-2">{children}</h1>,
+                      h2: ({ children }) => <h2 className="text-sm font-bold mb-1">{children}</h2>,
+                      h3: ({ children }) => <h3 className="text-sm font-semibold mb-1">{children}</h3>,
+                      ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-0.5">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-0.5">{children}</ol>,
+                      li: ({ children }) => <li>{children}</li>,
+                      strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                      em: ({ children }) => <em className="italic text-gray-300">{children}</em>,
+                      a: ({ href, children }) => <a href={href} className="text-blue-400 underline hover:text-blue-300" target="_blank" rel="noopener noreferrer">{children}</a>,
+                      blockquote: ({ children }) => <blockquote className="border-l-2 border-gray-500 pl-3 text-gray-400 italic my-2">{children}</blockquote>,
+                      pre: ({ children }) => <pre className="bg-gray-900 rounded-lg p-3 overflow-x-auto my-2 text-xs font-mono">{children}</pre>,
+                      code: ({ className, children }) => {
+                        const isBlock = /language-/.test(className || "");
+                        return isBlock
+                          ? <code className={className}>{children}</code>
+                          : <code className="bg-gray-700 px-1 py-0.5 rounded text-xs font-mono text-pink-300">{children}</code>;
+                      },
+                      table: ({ children }) => <table className="w-full text-xs border-collapse my-2">{children}</table>,
+                      th: ({ children }) => <th className="border border-gray-600 px-2 py-1 bg-gray-700 font-semibold text-left">{children}</th>,
+                      td: ({ children }) => <td className="border border-gray-600 px-2 py-1">{children}</td>,
+                    }}
+                  >
+                    {msg.content}
+                  </ReactMarkdown>
+                )}
               </div>
               {msg.role === "assistant" && msg.tokenUsage && (
                 <p className="text-xs text-gray-500 ml-1">

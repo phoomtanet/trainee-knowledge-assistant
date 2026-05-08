@@ -460,7 +460,7 @@ Requirements:
 
 ---
 
-## Session 11 — Docker Healthcheck [ ]
+## Session 11 — Docker Healthcheck [x]
 
 เพิ่ม healthcheck ให้ทุก service ใน docker-compose.yml
 
@@ -473,3 +473,98 @@ Requirements:
 - qdrant: GET /healthz → 200 OK
 - ใช้ `depends_on` + `condition: service_healthy` เพื่อให้ backend รอ mongodb และ qdrant พร้อมก่อน
 - สร้าง health endpoint ใน backend (`GET /api/health`)
+
+---
+
+## Session 12 — Markdown Rendering [x]
+
+แสดง Markdown ในคำตอบของ AI
+
+Requirements:
+
+- ติดตั้ง `react-markdown` และ `remark-gfm`
+- wrap AI bubble content ด้วย `<ReactMarkdown>` แทนการแสดง plain text
+- รองรับ: bold, italic, code block, inline code, list, heading, table
+- style ให้เข้ากับ dark theme ของ chat UI
+- ไม่แก้ backend
+
+---
+
+## Session 13 — Rate Limiting [ ]
+
+เพิ่ม rate limiting ให้ครอบคลุม chat และ upload
+
+Requirements:
+
+- ติดตั้ง `express-rate-limit`
+- login มี rate limit อยู่แล้ว — เพิ่ม limit ให้ route `/api/chat` และ `/api/documents/upload`
+- chat: 30 requests / 1 นาที ต่อ IP
+- upload: 10 requests / 1 นาที ต่อ IP
+- ตอบ 429 Too Many Requests พร้อม message ที่อ่านง่าย
+- แยก limiter config ออกเป็น middleware ของตัวเอง
+
+---
+
+## Session 14 — Citation [ ]
+
+แสดงที่มาของคำตอบ AI จากเอกสารที่อัปโหลด
+
+Requirements:
+
+- Backend: หลัง search Qdrant ให้ return ชื่อไฟล์ที่ใช้เป็น context กลับมาพร้อม reply
+- เพิ่ม `sources: string[]` ใน ChatResult (backend) และ response
+- Frontend: ถ้า sources มีค่า ให้แสดงใต้ AI bubble เป็น badge/chip เช่น `📄 document.pdf`
+- ถ้าไม่มี sources (AI ตอบจากความรู้ตัวเอง) ไม่ต้องแสดงอะไร
+
+---
+
+## Session 15 — Unit Tests [ ]
+
+เขียน unit test ให้ได้ coverage ≥ 40%
+
+Requirements:
+
+- ติดตั้ง `jest`, `ts-jest`, `@types/jest` ใน backend
+- เขียน test สำหรับ:
+  - `utils/contextBuilder.ts`
+  - `utils/textChunker.ts`
+  - `services/chat.service.ts` (mock fetch)
+  - `services/embedding.service.ts` (mock embedder + qdrant)
+  - `middlewares/errorHandler.ts`
+- ตั้งค่า jest coverage threshold ≥ 40%
+- เพิ่ม script `test` และ `test:coverage` ใน package.json
+- ไม่ต้องเขียน test ฝั่ง frontend
+
+---
+
+## Session 16 — Conversation History [ ]
+
+บันทึกและโหลดประวัติการสนทนา
+
+Requirements:
+
+- สร้าง `Conversation` model ใน MongoDB (userId, messages[], createdAt, updatedAt)
+- API:
+  - `POST /api/conversations` — สร้าง/บันทึก conversation
+  - `GET /api/conversations` — ดึงรายการ conversations ของ user
+  - `GET /api/conversations/:id` — โหลด conversation
+- Frontend:
+  - แสดง sidebar รายการ conversations
+  - กด load conversation → โหลด messages กลับมาใน chat
+  - ปุ่ม "New Chat" สร้าง conversation ใหม่
+  - auto-save หลังทุก AI reply
+
+---
+
+## Session 17 — Streaming Response [ ]
+
+แสดงคำตอบ AI แบบ streaming (ทีละ token)
+
+Requirements:
+
+- Backend: เปลี่ยน `/api/chat` ให้ส่ง Server-Sent Events (SSE) แทน JSON เดิม
+- ใช้ OpenRouter streaming API (`stream: true` ใน request body)
+- parse `data: {...}` chunks แล้ว stream กลับไป client ทีละ chunk
+- Frontend: ใช้ `fetch` + `ReadableStream` รับ SSE
+- แสดงข้อความ AI ที่กำลัง stream ใน bubble แบบ typewriter effect
+- token usage ยังแสดงได้เมื่อ stream จบ (จาก `[DONE]` event)
