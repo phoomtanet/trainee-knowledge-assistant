@@ -447,7 +447,7 @@ Technical Requirements:
 
 ---
 
-## Session 10 — Token Usage Counter [ ]
+## Session 10 — Token Usage Counter [x]
 
 เมื่อพิมแชต ให้แสดง Token Usage Counter
 
@@ -457,3 +457,19 @@ Requirements:
 - Return token usage กลับมาพร้อม reply ใน chat response
 - Frontend แสดง token usage ของแต่ละ message ใต้ bubble ของ AI
 - แสดงสะสม total tokens ที่ใช้ใน session ที่ header หรือ input bar
+
+---
+
+## Session 11 — Docker Healthcheck [ ]
+
+เพิ่ม healthcheck ให้ทุก service ใน docker-compose.yml
+
+Requirements:
+
+- เพิ่ม `healthcheck` ให้ครบทุก service: backend, frontend, mongodb, qdrant
+- backend: GET /api/health → 200 OK
+- frontend: GET / → 200 OK
+- mongodb: mongosh ping
+- qdrant: GET /healthz → 200 OK
+- ใช้ `depends_on` + `condition: service_healthy` เพื่อให้ backend รอ mongodb และ qdrant พร้อมก่อน
+- สร้าง health endpoint ใน backend (`GET /api/health`)

@@ -360,3 +360,35 @@ feat: add token usage counter to chat UI
 - Display per-message token count under each AI bubble
 - Show cumulative session token total in chat header
 ```
+
+---
+
+## Session 11
+
+**Prompt:**
+เพิ่ม Docker Healthcheck ให้ทุก service ใน docker-compose.yml
+
+**AI Response:**
+- ยืนยัน backend `/health` endpoint มีอยู่แล้วใน `app.ts`
+- อัปเดต `docker-compose.yml` เพิ่ม `healthcheck` ทุก service:
+  - `frontend`: `wget --spider http://127.0.0.1:3000` (node:alpine, IPv4)
+  - `nginx`: `wget --spider http://127.0.0.1:80` (alpine, IPv4)
+  - `backend`: `wget --spider http://127.0.0.1:4000/health` (node:alpine, IPv4)
+  - `mongodb`: `mongosh --eval "db.adminCommand('ping')"` (built-in tool)
+  - `qdrant`: `bash -c "exec 3<>/dev/tcp/127.0.0.1/6333"` (ไม่มี wget/curl ใช้ bash TCP แทน)
+- อัปเดต `depends_on` ใน backend ให้ใช้ `condition: service_healthy` รอ mongodb + qdrant พร้อม
+- อัปเดต `depends_on` ใน nginx ให้รอ frontend healthy ก่อน
+- แก้ไข IPv6 issue: `localhost` resolve ไป `[::1]` แต่ services listen บน IPv4 ต้องใช้ `127.0.0.1` แทน
+
+**My Adjustment:**
+[รอ manual review จาก developer]
+
+**Git Commit:**
+```
+feat: add Docker healthchecks to all services
+
+- Add healthcheck to frontend, nginx, backend, mongodb, qdrant
+- Use condition: service_healthy in depends_on for backend and nginx
+- Fix IPv6 issue: use 127.0.0.1 instead of localhost in healthcheck URLs
+- Use bash /dev/tcp for qdrant (no wget/curl in qdrant image)
+```
