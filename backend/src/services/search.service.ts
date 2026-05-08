@@ -18,10 +18,14 @@ export const searchService = {
       with_payload: true,
     });
 
-    return results.map((r) => ({
-      text: (r.payload?.text as string) || "",
-      filename: (r.payload?.filename as string) || "",
-      score: r.score,
-    }));
+    return results.map((r) => {
+      const raw = (r.payload?.filename as string) || "";
+      const filename = Buffer.from(raw, "latin1").toString("utf8");
+      return {
+        text: (r.payload?.text as string) || "",
+        filename,
+        score: r.score,
+      };
+    });
   },
 };

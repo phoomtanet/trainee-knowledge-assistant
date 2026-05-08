@@ -518,7 +518,22 @@ Requirements:
 
 ---
 
-## Session 15 — Unit Tests [ ]
+## Session 15 — Separate Upload Page [ ]
+
+แยก Upload Document ออกมาเป็นหน้าของตัวเอง `/upload` และลบ upload feature ออกจาก Chat Page
+
+Requirements:
+
+- สร้างหน้า `/upload` สำหรับ upload PDF/TXT โดยเฉพาะ
+- UI หน้า upload: drag & drop zone หรือ file picker, แสดง loading, success, error state
+- แสดงชื่อไฟล์และจำนวน chunks ที่ embedded หลัง upload สำเร็จ
+- ลบปุ่ม upload (paperclip icon) และ hidden file input ออกจาก Chat Page (`chat/page.tsx`)
+- เพิ่ม navigation link ไปหน้า Upload ใน Chat header
+- Protected route — ต้อง login ก่อน
+
+---
+
+## Session 16 — Unit Tests [ ]
 
 เขียน unit test ให้ได้ coverage ≥ 40%
 
@@ -537,7 +552,7 @@ Requirements:
 
 ---
 
-## Session 16 — Conversation History [ ]
+## Session 17 — Conversation History [ ]
 
 บันทึกและโหลดประวัติการสนทนา
 
@@ -556,7 +571,7 @@ Requirements:
 
 ---
 
-## Session 17 — Streaming Response [ ]
+## Session 18 — Streaming Response [ ]
 
 แสดงคำตอบ AI แบบ streaming (ทีละ token)
 

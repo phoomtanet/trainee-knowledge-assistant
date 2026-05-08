@@ -482,3 +482,39 @@ feat: add citation — show source documents under AI responses
 - Pass sources through controller to frontend response
 - Display source file badges under AI bubble when RAG context is used
 ```
+
+---
+
+## Session 15
+
+**Prompt:**
+แยก Upload Document ออกมาเป็นหน้าของตัวเอง `/upload` และลบ upload feature ออกจาก Chat Page
+
+**AI Response:**
+- อัปเดต `frontend/src/middleware.ts` — เพิ่ม `/upload` ใน protectedRoutes
+- อัปเดต `frontend/src/types/document.ts` — เพิ่ม `chunksStored` ใน UploadResponse.data
+- สร้าง `frontend/src/app/upload/page.tsx`:
+  - drag & drop zone + click to browse
+  - loading state พร้อม spinner
+  - success state: แสดงชื่อไฟล์, ขนาด, จำนวน chunks embedded
+  - error state พร้อมปุ่ม retry
+  - ปุ่ม "ไปถามคำถาม →" ลิงก์ไป /chat หลัง upload สำเร็จ
+- อัปเดต `frontend/src/app/chat/page.tsx`:
+  - ลบ: UploadStatus type, uploadStatus/uploadLabel state, fileInputRef, handleFileChange, documentService import, ChangeEvent import
+  - ลบ JSX: upload status bar, paperclip button, hidden file input
+  - เพิ่ม link "อัปโหลดเอกสาร" ใน header → /upload
+  - อัปเดต welcome message
+
+**My Adjustment:**
+[รอ manual review จาก developer]
+
+**Git Commit:**
+```
+feat: separate upload into dedicated /upload page
+
+- Create /upload page with drag & drop, loading, success, error states
+- Show filename, size, and chunks embedded after successful upload
+- Remove upload UI from Chat page
+- Add "อัปโหลดเอกสาร" nav link in Chat header
+- Protect /upload route in middleware
+```

@@ -5,5 +5,6 @@ export interface UploadResponse {
     size: number;
     mimetype: string;
     preview: string;
+    chunksStored: number;
   };
 }

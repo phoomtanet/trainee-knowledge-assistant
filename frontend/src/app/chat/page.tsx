@@ -1,30 +1,26 @@
 "use client";
 
-import { useState, useRef, useEffect, FormEvent, ChangeEvent } from "react";
+import { useState, useRef, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { authService } from "@/services/auth.service";
 import { chatService } from "@/services/chat.service";
-import { documentService } from "@/services/document.service";
 import { ChatMessage, TokenUsage } from "@/types/chat";
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
-  timestamp: Date;
   tokenUsage?: TokenUsage;
   sources?: string[];
 }
 
-type UploadStatus = "idle" | "uploading" | "success" | "error";
-
 const WELCOME: Message = {
   id: "welcome",
   role: "assistant",
-  content: "สวัสดีครับ! ผมคือ Knowledge Assistant 👋\nอัปโหลดเอกสารหรือถามคำถามได้เลยครับ",
-  timestamp: new Date(),
+  content: "สวัสดีครับ! ผมคือ Knowledge Assistant 👋\nถามคำถามได้เลยครับ หรือไปที่หน้า Upload เพื่ออัปโหลดเอกสาร",
 };
 
 export default function ChatPage() {
@@ -33,10 +29,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [totalTokens, setTotalTokens] = useState(0);
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
-  const [uploadLabel, setUploadLabel] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -47,13 +40,7 @@ export default function ChatPage() {
     const text = input.trim();
     if (!text || loading) return;
 
-    const userMsg: Message = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: text,
-      timestamp: new Date(),
-    };
-
+    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
@@ -67,7 +54,13 @@ export default function ChatPage() {
       const result = await chatService.send(history);
       setMessages((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), role: "assistant", content: result.reply, timestamp: new Date(), tokenUsage: result.tokenUsage, sources: result.sources },
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: result.reply,
+          tokenUsage: result.tokenUsage,
+          sources: result.sources,
+        },
       ]);
       setTotalTokens((prev) => prev + (result.tokenUsage?.totalTokens ?? 0));
     } catch {
@@ -77,40 +70,10 @@ export default function ChatPage() {
           id: crypto.randomUUID(),
           role: "assistant",
           content: "เกิดข้อผิดพลาด ไม่สามารถเชื่อมต่อ AI ได้ กรุณาลองใหม่อีกครั้ง",
-          timestamp: new Date(),
         },
       ]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-
-    setUploadStatus("uploading");
-    setUploadLabel(file.name);
-
-    try {
-      const data = await documentService.upload(file);
-      setUploadStatus("success");
-      setUploadLabel(data.filename);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: `อัปโหลด "${data.filename}" สำเร็จแล้วครับ ✓\nคุณสามารถถามคำถามเกี่ยวกับเอกสารนี้ได้เลย`,
-          timestamp: new Date(),
-        },
-      ]);
-      setTimeout(() => setUploadStatus("idle"), 3000);
-    } catch (err) {
-      setUploadStatus("error");
-      setUploadLabel(err instanceof Error ? err.message : "Upload failed");
-      setTimeout(() => setUploadStatus("idle"), 4000);
     }
   };
 
@@ -124,9 +87,7 @@ export default function ChatPage() {
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-gray-900">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-sm font-bold">
-            K
-          </div>
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-sm font-bold">K</div>
           <span className="font-semibold text-white">Knowledge Assistant</span>
           {totalTokens > 0 && (
             <span className="text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded-lg">
@@ -134,21 +95,26 @@ export default function ChatPage() {
             </span>
           )}
         </div>
-        <button
-          onClick={handleLogout}
-          className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-800"
-        >
-          ออกจากระบบ
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/upload"
+            className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-800"
+          >
+            อัปโหลดเอกสาร
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-800"
+          >
+            ออกจากระบบ
+          </button>
+        </div>
       </header>
 
       {/* Messages */}
       <main className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
+          <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             {msg.role === "assistant" && (
               <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold mr-2 mt-1 shrink-0">
                 AI
@@ -162,7 +128,9 @@ export default function ChatPage() {
                     : "bg-gray-800 text-gray-100 rounded-bl-sm"
                 }`}
               >
-                {msg.role === "user" ? msg.content : (
+                {msg.role === "user" ? (
+                  msg.content
+                ) : (
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
@@ -216,9 +184,7 @@ export default function ChatPage() {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold mr-2 shrink-0">
-              AI
-            </div>
+            <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold mr-2 shrink-0">AI</div>
             <div className="bg-gray-800 px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1.5">
               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
@@ -231,51 +197,8 @@ export default function ChatPage() {
       </main>
 
       {/* Input */}
-      <form
-        onSubmit={handleSend}
-        className="px-4 pb-6 pt-3 border-t border-gray-800 bg-gray-900"
-      >
-        {/* Upload status */}
-        {uploadStatus !== "idle" && (
-          <div
-            className={`max-w-4xl mx-auto mb-2 px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 ${
-              uploadStatus === "uploading"
-                ? "bg-gray-800 text-gray-400"
-                : uploadStatus === "success"
-                ? "bg-green-500/10 text-green-400"
-                : "bg-red-500/10 text-red-400"
-            }`}
-          >
-            {uploadStatus === "uploading" && (
-              <span className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin shrink-0" />
-            )}
-            {uploadStatus === "success" && <span>✓</span>}
-            {uploadStatus === "error" && <span>✕</span>}
-            <span className="truncate">{uploadLabel}</span>
-          </div>
-        )}
-
+      <form onSubmit={handleSend} className="px-4 pb-6 pt-3 border-t border-gray-800 bg-gray-900">
         <div className="flex items-end gap-2 max-w-4xl mx-auto">
-          {/* File upload button */}
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploadStatus === "uploading"}
-            title="อัปโหลดเอกสาร PDF/TXT"
-            className="p-3 rounded-xl text-gray-400 hover:text-white hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-            </svg>
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,.txt"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
