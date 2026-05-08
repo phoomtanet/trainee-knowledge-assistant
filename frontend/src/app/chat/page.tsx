@@ -15,6 +15,7 @@ interface Message {
   content: string;
   timestamp: Date;
   tokenUsage?: TokenUsage;
+  sources?: string[];
 }
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
@@ -66,7 +67,7 @@ export default function ChatPage() {
       const result = await chatService.send(history);
       setMessages((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), role: "assistant", content: result.reply, timestamp: new Date(), tokenUsage: result.tokenUsage },
+        { id: crypto.randomUUID(), role: "assistant", content: result.reply, timestamp: new Date(), tokenUsage: result.tokenUsage, sources: result.sources },
       ]);
       setTotalTokens((prev) => prev + (result.tokenUsage?.totalTokens ?? 0));
     } catch {
@@ -192,6 +193,18 @@ export default function ChatPage() {
                   </ReactMarkdown>
                 )}
               </div>
+              {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
+                <div className="flex flex-wrap gap-1 ml-1">
+                  {msg.sources.map((src) => (
+                    <span
+                      key={src}
+                      className="inline-flex items-center gap-1 text-xs text-blue-300 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full"
+                    >
+                      📄 {src}
+                    </span>
+                  ))}
+                </div>
+              )}
               {msg.role === "assistant" && msg.tokenUsage && (
                 <p className="text-xs text-gray-500 ml-1">
                   ↑ {msg.tokenUsage.promptTokens} · ↓ {msg.tokenUsage.completionTokens} · total {msg.tokenUsage.totalTokens}

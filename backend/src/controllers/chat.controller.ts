@@ -14,7 +14,7 @@ export const chatController = {
       }
 
       const result = await chatService.chat(messages);
-      sendSuccess(res, { reply: result.reply, tokenUsage: result.tokenUsage });
+      sendSuccess(res, { reply: result.reply, sources: result.sources, tokenUsage: result.tokenUsage });
     } catch (err) {
       next(err);
     }

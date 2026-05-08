@@ -17,6 +17,7 @@ export interface TokenUsage {
 export interface ChatResult {
   reply: string;
   tokenUsage: TokenUsage;
+  sources: string[];
 }
 
 type OpenRouterMessage = { role: "system" | "user" | "assistant"; content: string };
@@ -26,14 +27,15 @@ interface OpenRouterResponse {
   usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
 }
 
-const searchContext = async (messages: ChatMessage[]): Promise<string> => {
+const searchContext = async (messages: ChatMessage[]): Promise<{ context: string; sources: string[] }> => {
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
-  if (!lastUser) return "";
+  if (!lastUser) return { context: "", sources: [] };
   try {
     const results = await searchService.search(lastUser.content, 3);
-    return buildSystemContext(results);
+    const unique = [...new Set(results.map((r) => r.filename))];
+    return { context: buildSystemContext(results), sources: unique };
   } catch {
-    return "";
+    return { context: "", sources: [] };
   }
 };
 
@@ -43,7 +45,7 @@ export const chatService = {
       throw new AppError(500, "OpenRouter API key not configured");
     }
 
-    const context = await searchContext(messages);
+    const { context, sources } = await searchContext(messages);
 
     const openRouterMessages: OpenRouterMessage[] = [
       ...(context ? [{ role: "system" as const, content: context }] : []),
@@ -73,6 +75,7 @@ export const chatService = {
 
     return {
       reply: content,
+      sources,
       tokenUsage: {
         promptTokens: data.usage?.prompt_tokens ?? 0,
         completionTokens: data.usage?.completion_tokens ?? 0,

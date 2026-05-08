@@ -11,5 +11,5 @@ export interface TokenUsage {
 
 export interface ChatResponse {
   message: string;
-  data: { reply: string; tokenUsage: TokenUsage };
+  data: { reply: string; tokenUsage: TokenUsage; sources: string[] };
 }

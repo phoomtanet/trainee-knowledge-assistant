@@ -490,7 +490,7 @@ Requirements:
 
 ---
 
-## Session 13 — Rate Limiting [ ]
+## Session 13 — Rate Limiting [x]
 
 เพิ่ม rate limiting ให้ครอบคลุม chat และ upload
 
@@ -505,7 +505,7 @@ Requirements:
 
 ---
 
-## Session 14 — Citation [ ]
+## Session 14 — Citation [X]
 
 แสดงที่มาของคำตอบ AI จากเอกสารที่อัปโหลด
 

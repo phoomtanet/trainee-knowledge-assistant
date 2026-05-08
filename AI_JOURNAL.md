@@ -449,3 +449,36 @@ feat: add rate limiting to chat and upload routes
 - Apply limiters to /api/chat and /api/documents/upload
 - Existing loginRateLimiter (10 req/15min) unchanged
 ```
+
+---
+
+## Session 14
+
+**Prompt:**
+แสดง Citation — ที่มาของคำตอบ AI จากเอกสารที่อัปโหลด
+
+**AI Response:**
+- อัปเดต `backend/src/services/chat.service.ts`:
+  - `searchContext()` return `{ context, sources }` แทน string เดิม
+  - deduplicate filenames ด้วย `Set`
+  - เพิ่ม `sources: string[]` ใน `ChatResult` interface
+- อัปเดต `backend/src/controllers/chat.controller.ts` — pass `sources` ใน response
+- อัปเดต `frontend/src/types/chat.ts` — เพิ่ม `sources: string[]` ใน ChatResponse.data
+- อัปเดต `frontend/src/services/chat.service.ts` — return `sources` พร้อม reply/tokenUsage
+- อัปเดต `frontend/src/app/chat/page.tsx`:
+  - เพิ่ม `sources?: string[]` ใน Message interface
+  - เก็บ sources ใน message state หลังได้รับ reply
+  - แสดง source badges ใต้ AI bubble: `📄 filename.pdf` (blue pill)
+  - แสดงเฉพาะเมื่อ sources มีค่า (AI ตอบจากเอกสาร)
+
+**My Adjustment:**
+[รอ manual review จาก developer]
+
+**Git Commit:**
+```
+feat: add citation — show source documents under AI responses
+
+- Return source filenames from Qdrant search in chat service
+- Pass sources through controller to frontend response
+- Display source file badges under AI bubble when RAG context is used
+```
